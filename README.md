@@ -71,3 +71,4 @@ Sử dụng thư viện `face-api.js` trên nền tảng `TensorFlow.js` để t
 │   └── faceid.js       # Logic xử lý AI nhận diện khuôn mặt
 └── models/             # Chứa các file trọng số (weights) của face-api.js
 ```
+Web : https://btl6.onrender.com
