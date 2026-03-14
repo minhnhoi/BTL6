@@ -1,0 +1,6507 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Master - Cloudinary</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4151/4151322.png" type="image/png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #6c5ce7;
+      --primary-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      --bg-overlay: rgba(255, 255, 255, 0.65);
+      --glass-bg: rgba(255, 255, 255, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.4);
+      --text-color: #2d3436;
+      --text-secondary: #636e72;
+      --input-bg: rgba(255, 255, 255, 0.9);
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      --success-color: #00b894;
+      --danger-color: #ff7675;
+      --warning-color: #fdcb6e;
+      --border-radius: 16px;
+      --transition-speed: 0.4s;
+      --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    [data-theme="dark"] {
+      --primary-color: #a29bfe;
+      --primary-gradient: linear-gradient(135deg, #6c5ce7, #4834d4);
+      --bg-overlay: rgba(0, 0, 0, 0.6);
+      --glass-bg: rgba(30, 30, 30, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-color: #dfe6e9;
+      --text-secondary: #b2bec3;
+      --input-bg: rgba(0, 0, 0, 0.3);
+      --shadow-color: rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: "Outfit", sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text-color);
+      background: url("https://anhdepbonphuong.com/wp-content/uploads/2015/12/hinh-nen-noel-may-tinh-5.jpg") no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      transition: color var(--transition-speed);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(8px);
+      z-index: 0;
+      pointer-events: none;
+      transition: background var(--transition-speed);
+    }
+
+    #snow-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      background: white;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(1px);
+      animation: fall linear infinite, sway ease-in-out infinite;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh);
+      }
+    }
+
+    @keyframes sway {
+
+      0%,
+      100% {
+        margin-left: 0;
+      }
+
+      50% {
+        margin-left: 50px;
+      }
+    }
+
+    .view-section {
+      animation: slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .stat-card,
+    .history-card,
+    .result-item {
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 15px 45px var(--shadow-color);
+      background: var(--glass-bg);
+    }
+
+    .btn {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s var(--bounce);
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+
+    .modal-content {
+      animation: modalPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes modalPop {
+      from {
+        opacity: 0;
+        transform: scale(0.5) translateY(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .url-input:focus {
+      width: 105%;
+      border-color: var(--primary-color);
+      background: white;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      background: var(--glass-bg);
+      padding: 15px 25px;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px 0 var(--shadow-color);
+      backdrop-filter: blur(12px);
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    h2.title {
+      margin: 0;
+      font-weight: 700;
+      font-size: 24px;
+      background: var(--primary-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .server-select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--glass-border);
+      background: var(--input-bg);
+      color: var(--primary-color);
+      font-weight: 600;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+      transition: 0.3s;
+      min-width: 150px;
+    }
+
+    .server-select:hover {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s var(--bounce);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .btn-icon-only {
+      padding: 10px;
+      width: 40px;
+      height: 40px;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .btn-theme {
+      background: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid var(--glass-border);
+    }
+
+    .btn-theme:hover {
+      background: var(--primary-color);
+      color: white;
+      transform: rotate(15deg);
+    }
+
+    .btn-clear {
+      background: rgba(255, 118, 117, 0.15);
+      color: var(--danger-color);
+    }
+
+    .btn-clear:hover {
+      background: var(--danger-color);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      height: auto;
+    }
+
+    .btn-warehouse {
+      background: linear-gradient(135deg, #fd79a8, #e84393);
+      color: white;
+      border: none;
+    }
+
+    .btn-warehouse:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(232, 67, 147, 0.4);
+      color: white;
+    }
+
+    .btn-export {
+      background: rgba(9, 132, 227, 0.15);
+      color: #0984e3;
+    }
+
+    .btn-export:hover {
+      background: #0984e3;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .btn-admin {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn-admin:hover {
+      background: var(--text-color);
+      color: var(--input-bg);
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: 0.3s var(--bounce);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary-color);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: white;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .storage-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .storage-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0984e3, #74b9ff);
+      width: 0%;
+      transition: width 1s ease;
+      border-radius: 10px;
+    }
+
+    .storage-text {
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+    }
+
+    .refresh-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-left: 8px;
+      transition: 0.3s;
+    }
+
+    .refresh-btn:hover {
+      color: var(--primary-color);
+      transform: rotate(180deg);
+    }
+
+    .stat-upload .stat-icon {
+      background: linear-gradient(135deg, #00b894, #00cec9);
+    }
+
+    .stat-cloud .stat-icon {
+      background: linear-gradient(135deg, #0984e3, #74b9ff);
+    }
+
+    .url-upload-section {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius);
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px var(--shadow-color);
+    }
+
+    .url-input {
+      flex-grow: 1;
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: var(--input-bg);
+      color: var(--text-color);
+      font-family: inherit;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .url-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+    }
+
+    .btn-url-upload {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+      white-space: nowrap;
+    }
+
+    .btn-url-upload:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+    }
+
+    .upload-box {
+      background: var(--glass-bg);
+      border: 2px dashed var(--primary-color);
+      border-radius: var(--border-radius);
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s var(--bounce);
+      margin-bottom: 40px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px 0 var(--shadow-color);
+      position: relative;
+    }
+
+    .upload-box:hover {
+      transform: translateY(-5px) scale(1.01);
+      border-color: #6c5ce7;
+    }
+
+    .upload-box i {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      transition: 0.4s;
+    }
+
+    .upload-box:hover i {
+      transform: translateY(-10px) scale(1.1);
+    }
+
+    .upload-box h3 {
+      color: var(--text-color);
+      margin: 10px 0;
+    }
+
+    .upload-box p {
+      color: var(--text-secondary);
+    }
+
+    .paste-hint {
+      margin-top: 15px;
+      font-size: 13px;
+      background: rgba(108, 92, 231, 0.1);
+      color: var(--primary-color);
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .result-item {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      display: flex;
+      gap: 25px;
+      margin-bottom: 25px;
+      transition: all 0.4s var(--bounce);
+      animation: slideUp 0.6s var(--bounce);
+      backdrop-filter: blur(10px);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .history-section-title {
+      margin: 0 0 20px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-color);
+      border-bottom: 2px solid var(--glass-border);
+      padding-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 20px;
+      margin-bottom: 50px;
+    }
+
+    .history-card {
+      aspect-ratio: 1/1;
+      background: var(--glass-bg);
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: 0.3s var(--bounce);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .history-card:hover {
+      transform: translateY(-5px) scale(1.05);
+      border-color: var(--primary-color);
+      box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2);
+      z-index: 2;
+    }
+
+    .history-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: 0.3s;
+    }
+
+    .history-type-icon {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: var(--glass-bg);
+      width: 100%;
+      max-width: 650px;
+      border-radius: 20px;
+      padding: 25px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: zoomIn 0.3s var(--bounce);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .btn-close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 118, 117, 0.2);
+      color: var(--danger-color);
+      border: none;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+      z-index: 10;
+    }
+
+    .btn-close-modal:hover {
+      background: var(--danger-color);
+      color: white;
+      transform: rotate(90deg);
+    }
+
+    .modal-preview-box {
+      width: 100%;
+      max-height: 350px;
+      background: #000;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .modal-img-preview {
+      max-width: 100%;
+      max-height: 350px;
+      object-fit: contain;
+    }
+
+    .thumb-col {
+      width: 150px;
+      flex-shrink: 0;
+    }
+
+    .thumb-img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid var(--glass-border);
+    }
+
+    .file-icon {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: var(--text-secondary);
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .video-placeholder {
+      width: 150px;
+      height: 150px;
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-thumb-bg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.6;
+      transition: 0.3s;
+    }
+
+    .video-placeholder:hover .video-thumb-bg {
+      transform: scale(1.1);
+      opacity: 0.4;
+    }
+
+    .play-btn-overlay {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(4px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+      transition: 0.3s;
+    }
+
+    .play-btn-overlay i {
+      color: white;
+      font-size: 20px;
+      margin-left: 4px;
+    }
+
+    .video-placeholder:hover .play-btn-overlay {
+      transform: scale(1.2);
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .video-controls {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .btn-play {
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      transition: all 0.3s var(--bounce);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-transform: uppercase;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .btn-play:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-google {
+      background: linear-gradient(135deg, #4285f4, #3b5998);
+    }
+
+    .btn-html5 {
+      background: linear-gradient(135deg, #ff512f, #dd2476);
+    }
+
+    .audio-icon-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+      border-radius: 12px;
+      color: white;
+      border: 2px solid var(--glass-border);
+    }
+
+    .links-col {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .link-input {
+      width: 100%;
+      padding: 12px 55px 12px 15px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--primary-color);
+      background: var(--input-bg);
+      font-family: "Monaco", monospace;
+    }
+
+    .link-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+      border-color: var(--primary-color);
+    }
+
+    .btn-copy {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      bottom: 5px;
+      width: 40px;
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-copy:hover {
+      transform: scale(1.1);
+    }
+
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: var(--glass-bg);
+      backdrop-filter: blur(15px);
+      color: var(--text-color);
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-left: 5px solid;
+      animation: slideLeft 0.4s var(--bounce) forwards;
+      font-weight: 500;
+    }
+
+    .toast.success {
+      border-color: var(--success-color);
+    }
+
+    .toast.success i {
+      color: var(--success-color);
+    }
+
+    .toast.error {
+      border-color: var(--danger-color);
+    }
+
+    .toast.error i {
+      color: var(--danger-color);
+    }
+
+    @keyframes slideLeft {
+      from {
+        transform: translateX(120%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .loading-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 999;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .view-section {
+      transition: opacity 0.3s ease;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+
+    .admin-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      transition: 0.3s;
+    }
+
+    .admin-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary-color);
+    }
+
+    .admin-card h3 {
+      margin: 0 0 15px;
+      font-size: 18px;
+      color: var(--primary-color);
+    }
+
+    .admin-stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .admin-manager-box {
+      margin-top: 30px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .admin-controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .btn-scan {
+      background: var(--warning-color);
+      color: #2d3436;
+    }
+
+    .btn-delete-all {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .admin-table-container {
+      overflow-x: auto;
+    }
+
+    table.admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    table.admin-table th,
+    table.admin-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    table.admin-table th {
+      font-weight: 700;
+      color: var(--primary-color);
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    table.admin-table tr:hover td {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .duplicate-row {
+      background-color: rgba(253, 203, 110, 0.2);
+    }
+
+    .duplicate-row:hover td {
+      background-color: rgba(253, 203, 110, 0.3);
+    }
+
+    .dup-badge {
+      font-size: 10px;
+      background: var(--danger-color);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 5px;
+    }
+
+    .admin-file-link {
+      text-decoration: none;
+      color: var(--primary-color);
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .admin-file-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .result-item {
+        flex-direction: column;
+      }
+
+      .thumb-col,
+      .thumb-img,
+      .file-icon,
+      .video-placeholder,
+      .audio-icon-box {
+        width: 100%;
+        height: 200px;
+      }
+
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+        text-align: center;
+      }
+
+      .header-left {
+        flex-direction: column;
+      }
+
+      .btn-group {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .url-upload-section {
+        flex-direction: column;
+      }
+
+      .btn-url-upload {
+        width: 100%;
+      }
+    }
+
+    .view-section {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      filter: grayscale(1);
+      opacity: 0.6;
+    }
+
+    #intro-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    #intro-overlay.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #intro-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.6;
+      z-index: -1;
+    }
+
+    .intro-content {
+      text-align: center;
+      color: white;
+      z-index: 1;
+    }
+
+    .intro-content .intro-logo,
+    .intro-content .intro-title,
+    .intro-content p,
+    .intro-content .intro-hint {
+      opacity: 0;
+      animation: fadeInUpStagger 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+    }
+
+    .intro-logo {
+      font-size: 80px;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 20px rgba(108, 92, 231, 0.5));
+      animation-delay: 0.3s;
+    }
+
+    .intro-title {
+      font-size: 50px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin: 0;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+      animation-delay: 0.5s;
+    }
+
+    .intro-content p {
+      animation-delay: 0.7s;
+    }
+
+    .intro-hint {
+      margin-top: 50px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px 25px;
+      border-radius: 30px;
+      background: rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      user-select: none;
+
+      animation-name: fadeInUpStagger, pulse;
+      animation-duration: 0.8s, 2s;
+      animation-delay: 1s, 1s;
+      animation-iteration-count: 1, infinite;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes fadeInUpStagger {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.7;
+      }
+
+      50% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.95);
+        opacity: 0.7;
+      }
+    }
+
+    #intro-popup-modal {
+      display: none;
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .intro-description-box {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+      padding: 40px;
+      border-radius: 30px;
+      max-width: 550px;
+      width: 90%;
+      text-align: center;
+
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+
+      opacity: 0;
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #intro-popup-modal.active .intro-description-box {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    .intro-header {
+      margin-bottom: 20px;
+    }
+
+    .intro-logo-box {
+      font-size: 60px;
+      margin-bottom: 10px;
+
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+      animation: floatLogo 3s ease-in-out infinite;
+      filter: drop-shadow(0 10px 15px rgba(108, 92, 231, 0.3));
+    }
+
+    @keyframes floatLogo {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .intro-welcome-title {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 800;
+      color: #2d3436;
+      letter-spacing: -0.5px;
+    }
+
+    .intro-subtitle {
+      font-size: 14px;
+      color: #636e72;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      display: block;
+      margin-top: 5px;
+    }
+
+    .intro-desc-text {
+      color: #4b6584;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .intro-features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 35px;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 15px 10px;
+      border-radius: 16px;
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+
+    .feature-card:hover {
+      background: white;
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .feat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      font-size: 18px;
+    }
+
+    .feat-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .feat-text strong {
+      font-size: 13px;
+      color: #2d3436;
+      margin-bottom: 2px;
+    }
+
+    .feat-text span {
+      font-size: 11px;
+      color: #636e72;
+    }
+
+    .btn-start-modern {
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 25px rgba(108, 92, 231, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-start-modern::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent);
+      transition: 0.5s;
+    }
+
+    .btn-start-modern:hover {
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: 0 15px 35px rgba(108, 92, 231, 0.5);
+      gap: 15px;
+    }
+
+    .btn-start-modern:hover::after {
+      left: 100%;
+    }
+
+    @media (max-width: 600px) {
+      .intro-features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 20px;
+        text-align: left;
+      }
+
+      .feat-icon {
+        margin: 0;
+      }
+
+      .btn-start-modern {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .popup-closing .intro-description-box {
+      animation: scaleDownFadeOut 0.4s ease-in forwards !important;
+    }
+
+    @keyframes scaleDownFadeOut {
+      to {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+    }
+
+    .intro-features {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .feature-item {
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 500;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: white;
+      border: none;
+      padding: 10px 30px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+    }
+
+    .btn-start:hover {
+      transform: scale(1.05);
+    }
+
+    .progress-container {
+      width: 80%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-top: 15px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #0984e3;
+      border-radius: 10px;
+      position: relative;
+      transition: width 0.1s linear;
+
+      box-shadow: 0 0 10px rgba(9, 132, 227, 0.5);
+    }
+
+    .progress-bar-fill::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: 40px;
+
+      background: linear-gradient(to right,
+          transparent,
+          rgba(255, 255, 255, 0.8),
+          #fff);
+
+      box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.7);
+
+      border-radius: 0 10px 10px 0;
+      z-index: 2;
+    }
+
+    .progress-bar-fill::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background-image: linear-gradient(45deg,
+          rgba(255, 255, 255, 0.15) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.15) 50%,
+          rgba(255, 255, 255, 0.15) 75%,
+          transparent 75%,
+          transparent);
+      background-size: 20px 20px;
+      z-index: 1;
+    }
+
+    #btn-unmute {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 10001;
+      transition: 0.3s;
+    }
+
+    #btn-unmute:hover {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .hacker-overlay {
+      background: #000 !important;
+      overflow: hidden;
+
+      animation: hackerFadeIn 7.5s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+    }
+
+    @keyframes hackerFadeIn {
+      0% {
+        opacity: 0;
+        visibility: visible;
+      }
+
+      100% {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    #matrixCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      opacity: 0.3;
+    }
+
+    .cyber-modal {
+      position: relative;
+      z-index: 10;
+      width: 550px;
+      background: rgba(10, 10, 10, 0.9);
+      border: 1px solid #333;
+      box-shadow: 0 0 50px rgba(0, 255, 65, 0.2);
+      backdrop-filter: blur(10px);
+      padding: 2px;
+      clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%, 0 15%);
+      animation: modalEntry 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    @keyframes modalEntry {
+      0% {
+        transform: scaleY(0);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scaleY(1);
+        opacity: 1;
+      }
+    }
+
+    .cyber-header {
+      background: linear-gradient(90deg, #001100, #003300);
+      padding: 15px 25px;
+      border-bottom: 2px solid #00ff41;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .glitch-text {
+      color: #00ff41;
+      font-family: "Courier New", monospace;
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: 2px;
+      position: relative;
+      text-shadow: 2px 2px 0px #ff00ff;
+      animation: textGlitch 2s infinite;
+    }
+
+    .glitch-text::before,
+    .glitch-text::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #001100;
+    }
+
+    .glitch-text::before {
+      left: 2px;
+      text-shadow: -1px 0 #ff00c1;
+      clip: rect(44px, 450px, 56px, 0);
+      animation: glitch-anim 5s infinite linear alternate-reverse;
+    }
+
+    .glitch-text::after {
+      left: -2px;
+      text-shadow: -1px 0 #00fff9;
+      clip: rect(44px, 450px, 56px, 0);
+      animation: glitch-anim2 1s infinite linear alternate-reverse;
+    }
+
+    .cyber-id {
+      color: #008f11;
+      font-size: 10px;
+      font-family: monospace;
+    }
+
+    .cyber-body {
+      padding: 30px;
+      background: linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .status-log {
+      font-family: "Courier New", monospace;
+      color: #00ff41;
+      font-size: 12px;
+      height: 80px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      opacity: 0.8;
+      border-left: 2px solid #00ff41;
+      padding-left: 10px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
+    }
+
+    .status-log p {
+      margin: 2px 0;
+    }
+
+    .status-log::-webkit-scrollbar {
+      display: none;
+    }
+
+    .input-zone {
+      position: relative;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px;
+    }
+
+    .prompt-sign {
+      color: #00ff41;
+      font-weight: bold;
+      margin-right: 10px;
+      font-family: monospace;
+      text-shadow: 0 0 5px #00ff41;
+    }
+
+    .cyber-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: white;
+      font-family: "Courier New", monospace;
+      font-size: 18px;
+      outline: none;
+      letter-spacing: 3px;
+    }
+
+    .input-border {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 2px;
+      width: 0%;
+      background: #00ff41;
+      box-shadow: 0 0 10px #00ff41;
+      transition: width 0.3s;
+    }
+
+    .cyber-input:focus~.input-border {
+      width: 100%;
+    }
+
+    .cyber-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+    }
+
+    .cyber-btn {
+      background: transparent;
+      border: 1px solid #00ff41;
+      padding: 12px 30px;
+      color: #00ff41;
+      font-family: "Courier New", monospace;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: 0.3s;
+      text-transform: uppercase;
+      clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+    }
+
+    .cyber-btn:hover {
+      background: #00ff41;
+      color: black;
+      box-shadow: 0 0 30px #00ff41;
+      text-shadow: none;
+    }
+
+    .btn-cancel {
+      border-color: #ff0055;
+      color: #ff0055;
+    }
+
+    .btn-cancel:hover {
+      background: #ff0055;
+      box-shadow: 0 0 30px #ff0055;
+    }
+
+    .scan-line {
+      width: 100%;
+      height: 5px;
+      background: rgba(0, 255, 65, 0.3);
+      position: absolute;
+      z-index: 20;
+      top: 0;
+      left: 0;
+      animation: scanline 3s linear infinite;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .corner {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #00ff41;
+      z-index: 15;
+    }
+
+    .c-tl {
+      top: -2px;
+      left: -2px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .c-tr {
+      top: -2px;
+      right: -2px;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .c-bl {
+      bottom: -2px;
+      left: -2px;
+      border-right: none;
+      border-top: none;
+    }
+
+    .c-br {
+      bottom: -2px;
+      right: -2px;
+      border-left: none;
+      border-top: none;
+    }
+
+    @keyframes scanline {
+      0% {
+        top: -5%;
+      }
+
+      100% {
+        top: 105%;
+      }
+    }
+
+    @keyframes glitch-anim {
+      0% {
+        clip: rect(12px, 9999px, 5px, 0);
+      }
+
+      50% {
+        clip: rect(44px, 9999px, 15px, 0);
+      }
+
+      100% {
+        clip: rect(3px, 9999px, 86px, 0);
+      }
+    }
+
+    @keyframes glitch-anim2 {
+      0% {
+        clip: rect(65px, 9999px, 100px, 0);
+      }
+
+      100% {
+        clip: rect(5px, 9999px, 20px, 0);
+      }
+    }
+
+    .access-denied .cyber-modal {
+      border-color: red;
+      box-shadow: 0 0 50px red;
+      animation: shake 0.5s;
+    }
+
+    .access-denied .glitch-text,
+    .access-denied .prompt-sign {
+      color: red;
+      text-shadow: 0 0 10px red;
+    }
+
+    .access-denied .input-border {
+      background: red;
+      box-shadow: 0 0 10px red;
+    }
+
+    .access-granted .cyber-modal {
+      border-color: #00ffff;
+      box-shadow: 0 0 80px #00ffff;
+    }
+
+    .access-granted .glitch-text {
+      color: #00ffff;
+      text-shadow: 0 0 20px #00ffff;
+    }
+
+    .btn-admin img {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+      border-radius: 15px;
+    }
+
+    .btn-admin:hover img {
+      filter: drop-shadow(0 0 5px #00ff41) drop-shadow(0 0 15px #00ff41);
+
+      transform: scale(1.15) rotate(5deg);
+    }
+
+    #hacker-transition-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .transition-text {
+      color: #00ff41;
+      font-family: "Courier New", monospace;
+      font-weight: bold;
+      font-size: 20px;
+      text-align: center;
+      text-shadow: 0 0 10px #00ff41;
+      animation: blinkText 0.1s infinite;
+    }
+
+    @keyframes blinkText {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .crt-shutdown {
+      animation: turnOff 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    .crt-boot-up {
+      animation: turnOn 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      transform-origin: center;
+    }
+
+    @keyframes turnOff {
+      0% {
+        transform: scale(1, 1);
+        filter: brightness(1);
+      }
+
+      40% {
+        transform: scale(1, 0.005);
+        filter: brightness(5);
+      }
+
+      100% {
+        transform: scale(0, 0);
+        filter: brightness(0);
+      }
+    }
+
+    @keyframes turnOn {
+      0% {
+        transform: scaleY(0.005) scaleX(0);
+        filter: brightness(5);
+        opacity: 0;
+      }
+
+      30% {
+        transform: scaleY(0.005) scaleX(1);
+        filter: brightness(5);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scaleY(1) scaleX(1);
+        filter: brightness(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes shakeAndFlash {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      10%,
+      30%,
+      50%,
+      70%,
+      90% {
+        transform: translateX(-5px);
+      }
+
+      20%,
+      40%,
+      60%,
+      80% {
+        transform: translateX(5px);
+      }
+    }
+
+    .input-error {
+      animation: shakeAndFlash 0.5s ease-in-out;
+      box-shadow: 0 0 15px #ff3333 !important;
+      border: 1px solid #ff3333 !important;
+    }
+
+    .input-error .input-border {
+      background: #ff3333 !important;
+      width: 100% !important;
+      box-shadow: 0 0 10px #ff3333;
+    }
+
+    .input-error input::placeholder {
+      color: #ff3333 !important;
+      opacity: 1;
+    }
+
+    @keyframes singularity {
+      0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+        filter: brightness(1);
+      }
+
+      30% {
+        transform: scale(1.1) rotate(5deg);
+
+        background-color: #fff !important;
+        border-color: #00ffff !important;
+        box-shadow: 0 0 50px 20px rgba(0, 255, 255, 0.8) !important;
+
+        filter: brightness(3) contrast(2);
+      }
+
+      40% {
+        transform: scale(1.1) rotate(-5deg);
+      }
+
+      100% {
+        transform: scale(0) rotate(720deg);
+        opacity: 0;
+        filter: brightness(0);
+      }
+    }
+
+    .is-closing .cyber-modal {
+      animation: singularity 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards !important;
+
+      overflow: hidden !important;
+    }
+
+    .is-closing .cyber-modal * {
+      opacity: 0 !important;
+      transition: none !important;
+    }
+
+    .is-closing {
+      animation: fadeOutOverlay 0.8s forwards !important;
+    }
+
+    @keyframes fadeOutOverlay {
+      0% {
+        opacity: 1;
+      }
+
+      60% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    #view-admin {
+      background-color: #000 !important;
+      background-image: linear-gradient(rgba(0, 255, 65, 0.1) 1px,
+          transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at center, transparent 20%, #000 100%);
+      background-size: 30px 30px, 30px 30px, 100% 100%;
+      background-attachment: fixed;
+
+      font-family: "Courier New", "Consolas", monospace !important;
+      color: #00ff41 !important;
+      min-height: 100vh;
+      padding-bottom: 50px;
+    }
+
+    #view-admin * {
+      border-radius: 0 !important;
+      font-family: "Courier New", monospace !important;
+      box-sizing: border-box;
+    }
+
+    #view-admin .history-section-title {
+      background: rgba(0, 20, 0, 0.9) !important;
+      border: 1px solid #00ff41 !important;
+      border-left: 5px solid #00ff41 !important;
+      color: #00ff41 !important;
+      text-transform: uppercase;
+      text-shadow: 0 0 5px #00ff41;
+      padding: 15px !important;
+      margin-bottom: 30px !important;
+      box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+    }
+
+    #view-admin .admin-card {
+      background: #000500 !important;
+      border: 1px solid #004400 !important;
+      box-shadow: none !important;
+      transition: 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #view-admin .admin-card:hover {
+      border-color: #00ff41 !important;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.2) !important;
+      transform: translateY(-2px);
+    }
+
+    #view-admin .admin-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #00ff41;
+      opacity: 0.3;
+      animation: scanLine 2s linear infinite;
+    }
+
+    @keyframes scanLine {
+      0% {
+        top: 0;
+      }
+
+      100% {
+        top: 100%;
+      }
+    }
+
+    #view-admin .admin-card h3 {
+      color: #00ff41 !important;
+      font-weight: bold;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    #view-admin .stat-value {
+      color: #fff !important;
+      text-shadow: 0 0 5px #fff;
+    }
+
+    #view-admin .admin-stat-row {
+      color: #00cc33 !important;
+      font-size: 11px;
+    }
+
+    #view-admin .storage-bar-bg {
+      background: #111 !important;
+      border: 1px solid #333 !important;
+      height: 10px !important;
+    }
+
+    #view-admin .storage-bar-fill {
+      background: #00ff41 !important;
+      box-shadow: 0 0 10px #00ff41;
+    }
+
+    #view-admin .admin-manager-box {
+      background: rgba(0, 0, 0, 0.95) !important;
+      border: 1px solid #00ff41 !important;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.1) !important;
+      padding: 0 !important;
+    }
+
+    #view-admin .admin-manager-box h4 {
+      background: #002200 !important;
+      color: #00ff41 !important;
+      padding: 15px !important;
+      margin: 0 !important;
+      border-bottom: 1px solid #00ff41 !important;
+      text-transform: uppercase;
+    }
+
+    #view-admin .admin-controls {
+      background: #000 !important;
+      padding: 15px !important;
+      border-bottom: 1px dashed #004400 !important;
+    }
+
+    #view-admin .admin-controls button {
+      background: transparent !important;
+      border: 1px solid #00ff41 !important;
+      color: #00ff41 !important;
+      text-transform: uppercase;
+      font-weight: bold;
+      box-shadow: none !important;
+      transition: 0.2s;
+    }
+
+    #view-admin .admin-controls button:hover {
+      background: #00ff41 !important;
+      color: #000 !important;
+      box-shadow: 0 0 15px #00ff41;
+    }
+
+    #view-admin .admin-controls button.btn-clear,
+    #view-admin .admin-controls button.btn-delete-all {
+      border-color: #ff0000 !important;
+      color: #ff0000 !important;
+    }
+
+    #view-admin .admin-controls button.btn-clear:hover,
+    #view-admin .admin-controls button.btn-delete-all:hover {
+      background: #ff0000 !important;
+      color: #000 !important;
+      box-shadow: 0 0 15px #ff0000;
+    }
+
+    #view-admin .admin-controls button.btn-scan {
+      border-color: #ffff00 !important;
+      color: #ffff00 !important;
+    }
+
+    #view-admin .admin-controls button.btn-scan:hover {
+      background: #ffff00 !important;
+      color: #000 !important;
+    }
+
+    #view-admin select,
+    #view-admin input {
+      background: #000 !important;
+      color: #00ff41 !important;
+      border: 1px solid #00ff41 !important;
+      outline: none !important;
+    }
+
+    #view-admin .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #00ff41;
+    }
+
+    #view-admin th {
+      background: #002200 !important;
+      color: #00ff41 !important;
+      text-transform: uppercase;
+      border-bottom: 2px solid #00ff41 !important;
+      padding: 12px !important;
+    }
+
+    #view-admin td {
+      background: #000 !important;
+      color: #ccc !important;
+      border-bottom: 1px solid #003300 !important;
+      padding: 10px !important;
+      vertical-align: middle;
+    }
+
+    #view-admin tr:hover td {
+      background: #00ff41 !important;
+      color: #000 !important;
+      font-weight: bold;
+    }
+
+    #view-admin .admin-file-link {
+      color: #00ff41 !important;
+      text-decoration: none;
+    }
+
+    #view-admin tr:hover .admin-file-link {
+      color: #000 !important;
+    }
+
+    #view-admin .admin-table .btn-sm {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 5px !important;
+      font-size: 16px !important;
+      margin: 0 5px;
+      transition: transform 0.2s;
+    }
+
+    #view-admin .admin-table .btn-sm:hover {
+      transform: scale(1.3);
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    #view-admin .admin-table button[onclick*="rename"] i,
+    #view-admin .admin-table button:first-child i {
+      color: #ffff00 !important;
+      text-shadow: 0 0 5px #ffff00;
+    }
+
+    #view-admin tr:hover button[onclick*="rename"] i {
+      color: #000 !important;
+      text-shadow: none;
+    }
+
+    #view-admin .admin-table button[onclick*="delete"] i,
+    #view-admin .admin-table button:last-child i {
+      color: #ff0033 !important;
+      text-shadow: 0 0 8px #ff0033;
+    }
+
+    #view-admin tr:hover button[onclick*="delete"] i {
+      color: #000 !important;
+      text-shadow: none;
+    }
+
+    #view-admin input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ff0000;
+      background: #000;
+      cursor: pointer;
+      position: relative;
+      display: inline-block;
+      vertical-align: middle;
+      transition: all 0.2s ease;
+    }
+
+    #view-admin input[type="checkbox"]:checked {
+      background: #ff0000;
+      box-shadow: 0 0 10px #ff0000;
+    }
+
+    #view-admin input[type="checkbox"]:checked::after {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 2px;
+      width: 5px;
+      height: 10px;
+      border: solid rgb(255, 0, 0);
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
+    }
+
+    #view-admin input[type="checkbox"]:hover {
+      border-color: #fff;
+      box-shadow: 0 0 5px #ff0000;
+    }
+
+    #view-admin ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    #view-admin ::-webkit-scrollbar-track {
+      background: #000;
+      border-left: 1px solid #003300;
+    }
+
+    #view-admin ::-webkit-scrollbar-thumb {
+      background: #004400;
+      border: 1px solid #00ff41;
+    }
+
+    #view-admin ::-webkit-scrollbar-thumb:hover {
+      background: #00ff41;
+    }
+
+    #adminPreviewModal .modal-content {
+      background-color: #020a02 !important;
+
+      border: 2px solid #00ff41 !important;
+      border-radius: 0 !important;
+
+      box-shadow: 0 0 30px rgba(0, 255, 65, 0.2),
+        inset 0 0 20px rgba(0, 255, 65, 0.1) !important;
+
+      font-family: "Courier New", monospace !important;
+      color: #00ff41 !important;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #adminPreviewModal .modal-content::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg,
+          rgba(255, 0, 0, 0.06),
+          rgba(0, 255, 0, 0.02),
+          rgba(0, 0, 255, 0.06));
+      z-index: 0;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+    }
+
+    #adminPreviewModal .modal-content>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    #adminPreviewTitle {
+      color: #00ff41 !important;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-shadow: 0 0 5px #00ff41;
+      border-bottom: 1px dashed #004400;
+      padding-bottom: 15px;
+      margin-bottom: 20px !important;
+    }
+
+    #adminPreviewTitle::before {
+      content: "> TARGET_FILE: ";
+      opacity: 0.7;
+      font-size: 0.8em;
+    }
+
+    #adminPreviewModal .btn-close-modal {
+      background: transparent !important;
+      color: #ff0033 !important;
+      border: 1px solid #ff0033 !important;
+      border-radius: 0 !important;
+      width: 30px;
+      height: 30px;
+      top: 15px;
+      right: 15px;
+      opacity: 1;
+      transition: 0.2s;
+    }
+
+    #adminPreviewModal .btn-close-modal:hover {
+      background: #ff0033 !important;
+      color: #000 !important;
+      box-shadow: 0 0 15px #ff0033;
+      transform: rotate(90deg);
+    }
+
+    #adminPreviewFooter {
+      border-top: 1px dashed #004400 !important;
+      background: rgba(0, 0, 0, 0.5) !important;
+      padding-top: 20px !important;
+    }
+
+    #btnDeleteInModal {
+      background: #000 !important;
+      border: 1px solid #ff0033 !important;
+      color: #ff0033 !important;
+      font-family: "Courier New", monospace !important;
+      text-transform: uppercase;
+      border-radius: 0 !important;
+    }
+
+    #btnDeleteInModal:hover {
+      background: #ff0033 !important;
+      color: #000 !important;
+      box-shadow: 0 0 15px #ff0033;
+    }
+
+    #adminPreviewModal .btn-theme {
+      background: #000 !important;
+      border: 1px solid #00ff41 !important;
+      color: #00ff41 !important;
+      font-family: "Courier New", monospace !important;
+      text-transform: uppercase;
+      border-radius: 0 !important;
+    }
+
+    #adminPreviewModal .btn-theme:hover {
+      background: #00ff41 !important;
+      color: #000 !important;
+      box-shadow: 0 0 15px #00ff41;
+    }
+
+    #adminPreviewContent {
+      background: #000 !important;
+      border: 1px solid #003300 !important;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #adminPreviewContent img,
+    #adminPreviewContent video {
+      border: 1px solid #00ff41 !important;
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
+      background: #000;
+    }
+
+    /* --- CSS GLITCH FIX CHO CHỮ NHỎ (ĐÃ GIẢM TỐC ĐỘ) --- */
+    .user-glitch-text {
+      position: relative;
+      color: #00ff41;
+      font-family: "Courier New", monospace;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .user-glitch-text::before,
+    .user-glitch-text::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #020a02;
+    }
+
+    /* Lớp màu Đỏ: Tăng từ 3s lên 6s (Chậm gấp đôi) */
+    .user-glitch-text::before {
+      left: 2px;
+      text-shadow: -1px 0 #ff003c;
+      animation: glitch-anim-small 6s infinite linear alternate-reverse;
+    }
+
+    /* Lớp màu Xanh: Tăng từ 2s lên 4s (Chậm gấp đôi) */
+    .user-glitch-text::after {
+      left: -2px;
+      text-shadow: -1px 0 #00f3ff;
+      animation: glitch-anim-small 4s infinite linear alternate-reverse;
+    }
+
+    /* Keyframes giữ nguyên (vì chỉ cần chỉnh thời gian chạy ở trên là được) */
+    @keyframes glitch-anim-small {
+      0% {
+        clip: rect(2px, 9999px, 5px, 0);
+      }
+
+      5% {
+        clip: rect(15px, 9999px, 18px, 0);
+      }
+
+      10% {
+        clip: rect(8px, 9999px, 12px, 0);
+      }
+
+      15% {
+        clip: rect(20px, 9999px, 25px, 0);
+      }
+
+      20% {
+        clip: rect(1px, 9999px, 6px, 0);
+      }
+
+      25% {
+        clip: rect(10px, 9999px, 15px, 0);
+      }
+
+      30% {
+        clip: rect(18px, 9999px, 22px, 0);
+      }
+
+      35% {
+        clip: rect(4px, 9999px, 9px, 0);
+      }
+
+      40% {
+        clip: rect(12px, 9999px, 17px, 0);
+      }
+
+      45% {
+        clip: rect(21px, 9999px, 24px, 0);
+      }
+
+      50% {
+        clip: rect(5px, 9999px, 8px, 0);
+      }
+
+      55% {
+        clip: rect(16px, 9999px, 19px, 0);
+      }
+
+      60% {
+        clip: rect(3px, 9999px, 11px, 0);
+      }
+
+      65% {
+        clip: rect(14px, 9999px, 16px, 0);
+      }
+
+      70% {
+        clip: rect(22px, 9999px, 26px, 0);
+      }
+
+      75% {
+        clip: rect(6px, 9999px, 10px, 0);
+      }
+
+      80% {
+        clip: rect(19px, 9999px, 21px, 0);
+      }
+
+      85% {
+        clip: rect(2px, 9999px, 7px, 0);
+      }
+
+      90% {
+        clip: rect(11px, 9999px, 14px, 0);
+      }
+
+      95% {
+        clip: rect(24px, 9999px, 28px, 0);
+      }
+
+      100% {
+        clip: rect(9px, 9999px, 13px, 0);
+      }
+    }
+
+    /* Màu cho nút Sửa (File Pen) */
+    .fa-file-pen {
+      color: #ffff00 !important;
+      /* Vàng neon */
+      filter: drop-shadow(0 0 5px #ffff00);
+      transition: transform 0.2s;
+    }
+
+    .btn:hover .fa-file-pen {
+      transform: scale(1.2) rotate(-10deg);
+    }
+
+    /* Màu cho nút Xóa (Trash Can) */
+    .fa-trash-can {
+      color: #ff003c !important;
+      /* Đỏ neon */
+      filter: drop-shadow(0 0 5px #ff003c);
+      transition: transform 0.2s;
+    }
+
+    .btn:hover .fa-trash-can {
+      transform: scale(1.2) rotate(10deg);
+      filter: drop-shadow(0 0 10px #ff003c);
+      /* Sáng rực hơn khi hover */
+    }
+
+
+    /* ===== Upload Overlay Upgrade (Real Progress + Preview) ===== */
+    .upload-preview {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin: 18px 0 10px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+      transform: translateY(4px) scale(0.98);
+      opacity: 0;
+      transition: all 0.35s var(--bounce);
+    }
+
+    .loading-overlay[style*="display: flex"] .upload-preview:not(.hidden) {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .upload-meta {
+      width: 80%;
+      max-width: 520px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      opacity: 0.95;
+    }
+
+    .upload-meta-left {
+      color: rgba(255, 255, 255, 0.85);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 75%;
+    }
+
+    .upload-meta-right {
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .progress-bar-fill.indeterminate {
+      width: 40% !important;
+      animation: indeterminateMove 1.1s ease-in-out infinite;
+    }
+
+    @keyframes indeterminateMove {
+      0% {
+        transform: translateX(-60%);
+      }
+
+      50% {
+        transform: translateX(60%);
+      }
+
+      100% {
+        transform: translateX(-60%);
+      }
+    }
+
+    /* ===== Result Links: Open button ===== */
+    .btn-open {
+      position: absolute;
+      right: 48px;
+      top: 5px;
+      bottom: 5px;
+      width: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      text-decoration: none;
+      transition: 0.3s var(--bounce);
+      backdrop-filter: blur(6px);
+    }
+
+    .btn-open:hover {
+      transform: scale(1.1);
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .link-input {
+      padding-right: 105px;
+    }
+
+
+    /* ===== Overlay phủ toàn bộ background (dark tint) ===== */
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Lớp phủ đen nhẹ phủ toàn màn hình */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.28);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Đảm bảo toàn bộ UI nằm trên lớp phủ */
+    #app,
+    .app,
+    .container,
+    main,
+    header {
+      position: relative;
+      z-index: 1;
+    }
+
+
+    /* ===== Header actions layout (cân đối & khoa học) ===== */
+    .header-actions {
+      flex-wrap: nowrap;
+      gap: 12px;
+    }
+
+    .header-left {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .server-select {
+      width: min(520px, 100%);
+      min-width: 260px;
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+
+    /* Mobile: cho phép xuống hàng gọn gàng */
+    @media (max-width: 720px) {
+      .header-actions {
+        flex-wrap: wrap;
+      }
+
+      .header-left {
+        width: 100%;
+      }
+
+      .server-select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .btn-group {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <div id="intro-overlay" onclick="closeIntro()">
+      <video autoplay muted playsinline id="intro-video">
+        <source src="./intro.mp4" type="video/mp4" />
+      </video>
+
+      <div class="intro-content">
+        <div id="btn-unmute" onclick="enableSound(event)">
+          <i class="fa-solid fa-volume-xmark"></i> Bật tiếng
+        </div>
+
+        <div class="intro-logo">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+
+        <h1 class="intro-title">Upload Master</h1>
+        <p style="
+            font-size: 18px;
+            color: #dfe6e9;
+            font-weight: 300;
+            margin-top: 10px;
+          ">
+          Hệ thống lưu trữ đám mây
+        </p>
+
+        <div class="intro-hint">
+          <i class="fa-solid fa-spinner fa-spin"></i> Đang tải trang web...
+        </div>
+      </div>
+    </div>
+    <div id="intro-popup-modal" class="modal-overlay" style="z-index: 9999">
+      <div class="intro-description-box">
+        <div class="intro-header">
+          <div class="intro-logo-box">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <h2 class="intro-welcome-title">Upload Master</h2>
+          <span class="intro-subtitle">Cloud Storage Platform</span>
+        </div>
+
+        <p class="intro-desc-text">
+          Nền tảng lưu trữ và chia sẻ tài nguyên tốc độ cao. <br />
+          Bảo mật tuyệt đối, giao diện thân thiện và hoàn toàn miễn phí.
+        </p>
+
+        <div class="intro-features-grid">
+          <div class="feature-card">
+            <div class="feat-icon" style="background: rgba(253, 203, 110, 0.15); color: #fdcb6e">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div class="feat-text">
+              <strong>Tốc độ cao</strong>
+              <span>Server VIP</span>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feat-icon" style="background: rgba(0, 184, 148, 0.15); color: #00b894">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="feat-text">
+              <strong>An toàn</strong>
+              <span>Mã hóa 100%</span>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feat-icon" style="background: rgba(9, 132, 227, 0.15); color: #0984e3">
+              <i class="fa-solid fa-infinity"></i>
+            </div>
+            <div class="feat-text">
+              <strong>Lưu trữ</strong>
+              <span>Không giới hạn</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-start-modern" onclick="enterWebsite()">
+          <span>Khám phá ngay</span>
+          <i class="fa-solid fa-arrow-right-long"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="snow-container"></div>
+    <div id="toast-container"></div>
+
+    <div class="modal-overlay hacker-overlay" id="adminPassModal">
+      <canvas id="matrixCanvas"></canvas>
+
+      <div class="cyber-modal">
+        <div class="cyber-header">
+          <div class="glitch-text" data-text="SYSTEM_ADMIN">SYSTEM_ADMIN</div>
+          <div class="cyber-id">ID: #884-XJ9</div>
+        </div>
+
+        <div class="cyber-body">
+          <div class="status-log" id="hackerLog"></div>
+
+          <div class="input-zone">
+            <span class="prompt-sign">root@host:~$</span>
+            <input type="password" id="adminPassInput" class="cyber-input"
+              placeholder="Security of the private key. . . . ." autocomplete="off" />
+            <div class="input-border"></div>
+          </div>
+
+          <div class="cyber-actions">
+            <button class="cyber-btn" onclick="verifyAdmin()">
+              <span class="btn-content">INJECT_CODE</span>
+              <span class="btn-glitch"></span>
+            </button>
+
+            <button class="cyber-btn" onclick="goToFaceID()" style="border-color: #00ffff; color: #00ffff">
+              <span class="btn-content"><i class="fa-solid fa-expand"></i> FACE_SCAN</span>
+            </button>
+            <button class="cyber-btn btn-cancel" onclick="closeAdminModal()">
+              <span class="btn-content">DISCONNECT</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="corner c-tl"></div>
+        <div class="corner c-tr"></div>
+        <div class="corner c-bl"></div>
+        <div class="corner c-br"></div>
+        <div class="scan-line"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="linkModal">
+      <div class="modal-content">
+        <button class="btn-close-modal" onclick="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h3 style="margin: 0; text-align: center; color: var(--primary-color)" id="modalTitle">
+          Chi tiết File
+        </h3>
+        <div class="modal-preview-box" id="modalPreview"></div>
+        <div class="links-col" id="modalLinks"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="adminPreviewModal">
+      <div class="modal-content" style="max-width: 800px; text-align: center">
+        <button class="btn-close-modal" onclick="closeAdminPreview()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h3 id="adminPreviewTitle" style="
+            color: var(--primary-color);
+            word-break: break-all;
+            margin-bottom: 20px;
+          "></h3>
+
+        <div id="adminPreviewContent" class="modal-preview-box"
+          style="background: transparent; height: auto; min-height: 200px"></div>
+
+        <div id="adminPreviewFooter" style="
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+          ">
+          <button id="btnDeleteInModal" class="btn btn-danger" style="padding: 12px 25px">
+            <i class="fa-solid fa-trash-can"></i> Xóa File Này
+          </button>
+          <button class="btn btn-theme" onclick="closeAdminPreview()">
+            Đóng
+          </button>
+        </div>
+
+        <div style="margin-top: 15px">
+          <p style="font-size: 12px; color: var(--text-secondary)">
+            <i class="fa-solid fa-circle-exclamation"></i> Hành động xóa sẽ xóa
+            vĩnh viễn file trên Cloudinary.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingBox">
+      <div class="spinner"></div>
+      <p style="font-weight: 600; font-size: 18px; letter-spacing: 1px">
+        ĐANG TẢI LÊN...
+      </p>
+    </div>
+
+    <div class="container">
+      <div class="header-actions">
+        <div class="header-left">
+          <h2 class="title">
+            Minh's Cloud
+            <span style="
+                font-size: 12px;
+                vertical-align: super;
+                background: #6c5ce7;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 4px;
+              ">VIP</span>
+          </h2>
+          <select id="serverSelect" class="server-select" onchange="changeServer()">
+            <option value="0">Loading...</option>
+          </select>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-admin btn-icon-only" onclick="openAdminModal()" title="Admin Mode"
+            style="padding: 0; overflow: hidden">
+            <img src="logo (1).png" alt="Admin Logo" style="
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+              " />
+          </button>
+
+          <button class="btn btn-warehouse" onclick="switchView('gallery')" title="Mở kho lưu trữ">
+            <i class="fa-solid fa-box-archive"></i> Kho lưu trữ
+          </button>
+
+          <button class="btn btn-export" onclick="exportHistory()" title="Lưu lịch sử về máy">
+            <i class="fa-solid fa-file-export"></i> Backup
+          </button>
+
+          <button class="btn btn-theme btn-icon-only" onclick="toggleTheme()" title="Chế độ Sáng/Tối">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+          </button>
+          <button class="btn btn-theme btn-icon-only" id="mascot-toggle-btn" title="Ong/Bướm: đang tắt">
+            <i class="fa-solid fa-bug-slash" id="mascot-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="view-upload" class="view-section">
+        <div class="stats-row">
+          <div class="stat-card stat-upload">
+            <div class="stat-icon">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="count-uploaded">0</span>
+              <span class="stat-label">Tổng file đã lưu trữ</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-cloud">
+            <div class="stat-icon">
+              <i class="fa-solid fa-cloud"></i>
+            </div>
+            <div class="stat-info">
+              <div style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                ">
+                <span class="stat-value" id="count-drive">0</span>
+                <button class="refresh-btn" onclick="loadStats(true)" title="Cập nhật">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+              </div>
+              <span class="stat-label">File trên Cloud này</span>
+
+              <div class="storage-bar-bg">
+                <div class="storage-bar-fill" id="storage-bar"></div>
+              </div>
+
+              <div class="storage-text">
+                <span id="storage-used">0 GB</span>
+                <span id="storage-total">25 GB</span>
+              </div>
+
+              <div style="
+                  margin-top: 4px;
+                  font-size: 11px;
+                  color: var(--primary-color);
+                  font-weight: 600;
+                ">
+                <i class="fa-solid fa-calculator"></i> Thực tế:
+                <span id="live-storage-used">---</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="url-upload-section">
+          <i class="fa-solid fa-link" style="color: var(--primary-color); font-size: 18px"></i>
+          <input type="text" class="url-input" id="urlInput"
+            placeholder="Dán link ảnh (URL) vào đây để upload trực tiếp..." />
+          <button class="btn-url-upload" onclick="uploadFromUrl()">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload URL
+          </button>
+        </div>
+
+        <div class="upload-box" id="dropZone">
+          <i class="fa-solid fa-cloud-arrow-up fa-4x"></i>
+          <h3 style="font-size: 20px">Kéo thả file vào đây</h3>
+          <p>
+            Hệ thống sẽ upload vào
+            <b style="color: var(--primary-color)">Cloud đang chọn</b>
+          </p>
+          <div class="paste-hint">
+            <i class="fa-regular fa-keyboard"></i> Hỗ trợ Ctrl+V để dán ảnh
+          </div>
+          <input type="file" id="fileInput" multiple hidden />
+        </div>
+
+        <div class="result-header">
+          <span>
+            <i class="fa-solid fa-circle-info"></i> Danh sách vừa thêm
+          </span>
+          <button class="btn btn-clear btn-sm" onclick="clearResultList()" title="Xóa danh sách hiển thị bên dưới">
+            <i class="fa-solid fa-trash"></i> Xóa list
+          </button>
+        </div>
+        <div id="resultList"></div>
+      </div>
+
+      <div id="view-gallery" class="view-section hidden">
+        <h3 class="history-section-title" style="display: flex; align-items: center; gap: 15px">
+          <i class="fa-solid fa-box-archive" style="color: var(--primary-color); font-size: 24px"></i>
+
+          <span style="font-weight: 700; color: var(--text-color); font-size: 24px">
+            KHO LƯU TRỮ FILE
+          </span>
+
+          <button class="btn btn-theme" onclick="switchView('upload')"
+            style="margin-left: auto; border: 1px solid var(--glass-border)">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
+          </button>
+        </h3>
+        <p style="
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 20px;
+            text-align: center;
+          ">
+          <i class="fa-solid fa-circle-info"></i> Danh sách sẽ tự động cập nhật.
+        </p>
+
+        <div class="history-grid" id="historyGrid"></div>
+      </div>
+
+      <div id="view-admin" class="view-section hidden">
+        <h3 class="history-section-title" style="display: flex; align-items: center; gap: 15px">
+          <i class="fa-solid fa-shield-halved" style="color: #00ff41; font-size: 24px"></i>
+
+          <span class="user-glitch-text" data-text="QUẢN TRỊ VIÊN (ADMIN)">
+            QUẢN TRỊ VIÊN (ADMIN)
+          </span>
+
+          <button class="btn btn-clear" onclick="exitAdmin()" style="margin-left: auto">
+            <i class="fa-solid fa-right-from-bracket"></i> Thoát Admin
+          </button>
+        </h3>
+
+        <p style="
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 5px;
+          ">
+          <i class="fa-solid fa-chart-pie"></i> Tổng quan dung lượng các Server
+        </p>
+        <div id="adminGrid" class="admin-grid">
+          <p>Đang tải dữ liệu...</p>
+        </div>
+
+        <div class="admin-manager-box">
+          <h4 style="margin: 0 0 15px 0; color: var(--primary-color)">
+            <i class="fa-solid fa-folder-open"></i> Quản lý File & Dọn dẹp
+          </h4>
+
+          <div class="admin-controls">
+            <select id="adminServerSelect" class="server-select" onchange="loadAdminFiles()"></select>
+            <button class="btn btn-theme" onclick="loadAdminFiles()">
+              <i class="fa-solid fa-rotate"></i> Tải lại
+            </button>
+            <button class="btn btn-theme" onclick="goToAccessManager()">
+              <i class="fa-solid fa-user-shield"></i> Quản lý truy cập
+            </button>
+            <button class="btn btn-scan" onclick="scanDuplicates()">
+              <i class="fa-solid fa-magnifying-glass"></i> Quét file trùng
+            </button>
+
+            <button class="btn btn-clear" onclick="emptyDriveTrash()" style="background: #636e72; color: white">
+              <i class="fa-solid fa-dumpster"></i> Dọn rác
+            </button>
+            <button id="btnDeleteMulti" class="btn btn-delete-all" style="display: none; background: #e17055"
+              onclick="deleteSelectedFiles()">
+              <i class="fa-solid fa-trash-can"></i> Xóa nhiều
+            </button>
+
+            <button class="btn btn-delete-all" id="btnDeleteDup" style="display: none" onclick="deleteDuplicates()">
+              <i class="fa-solid fa-trash-can"></i> Xóa tất cả file trùng
+            </button>
+          </div>
+
+          <div id="adminStatusMsg" style="
+              margin-bottom: 10px;
+              font-weight: 600;
+              color: var(--text-color);
+            "></div>
+
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center">
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" />
+                  </th>
+                  <th>Tên File</th>
+                  <th>Kích thước</th>
+                  <th>Ngày tạo</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="adminFileList"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="hacker-transition-layer">
+      <div class="transition-glitch"></div>
+      <div class="transition-text">
+        CHÀO MỪNG ADMIN<br />
+        LOADING ADMIN_KERNEL...
+      </div>
+    </div>
+
+    <script>
+      const API_URL = window.location.origin;
+      const SERVER_URL = API_URL;
+
+      // ===== Telemetry (hợp pháp / không nhạy cảm) =====
+      function sendClientTelemetry() {
+        try {
+          const payload = {
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            platform: navigator.platform || null,
+            language: navigator.language || null,
+            screen: { w: window.screen?.width || null, h: window.screen?.height || null },
+            deviceMemory: navigator.deviceMemory || null,
+            hardwareConcurrency: navigator.hardwareConcurrency || null,
+            touch: (navigator.maxTouchPoints || 0) > 0,
+            // deviceName: null, // chỉ nếu user tự nhập
+          };
+          const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(`${API_URL}/telemetry/client`, blob);
+          } else {
+            fetch(`${API_URL}/telemetry/client`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+              keepalive: true,
+            }).catch(() => { });
+          }
+        } catch (_) { }
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        sendClientTelemetry();
+      });
+
+      const fileInput = document.getElementById("fileInput");
+      const dropZone = document.getElementById("dropZone");
+      const resultList = document.getElementById("resultList");
+      const loadingBox = document.getElementById("loadingBox");
+      const toastContainer = document.getElementById("toast-container");
+      const serverSelect = document.getElementById("serverSelect");
+      const elCountDrive = document.getElementById("count-drive");
+      const urlInput = document.getElementById("urlInput");
+
+      const viewUpload = document.getElementById("view-upload");
+      const viewGallery = document.getElementById("view-gallery");
+      const viewAdmin = document.getElementById("view-admin");
+      const historyGrid = document.getElementById("historyGrid");
+      const linkModal = document.getElementById("linkModal");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalPreview = document.getElementById("modalPreview");
+      const modalLinks = document.getElementById("modalLinks");
+      const adminPassModal = document.getElementById("adminPassModal");
+      const adminPassInput = document.getElementById("adminPassInput");
+      const adminGrid = document.getElementById("adminGrid");
+
+      const adminServerSelect = document.getElementById("adminServerSelect");
+      const adminFileList = document.getElementById("adminFileList");
+      const adminStatusMsg = document.getElementById("adminStatusMsg");
+      const btnDeleteDup = document.getElementById("btnDeleteDup");
+
+      const adminPreviewModal = document.getElementById("adminPreviewModal");
+      const adminPreviewTitle = document.getElementById("adminPreviewTitle");
+      const adminPreviewContent = document.getElementById(
+        "adminPreviewContent"
+      );
+
+      let autoRefreshInterval = null;
+      let lastDataSignature = null;
+      let currentAdminToken = "";
+      let globalUsedBytes = 0;
+      let globalTotalBytes = 25 * 1024 * 1024 * 1024;
+
+      let adminFilesCache = [];
+      let duplicateFiles = [];
+
+      initTheme();
+      createSnow();
+      loadServers();
+
+      function switchView(viewName) {
+        if (currentAdminToken !== "" && viewName !== "admin") {
+          showToast(
+            "Bạn phải 'Thoát Admin' trước khi chuyển sang mục khác!",
+            "error"
+          );
+          return;
+        }
+
+        viewUpload.classList.add("hidden");
+        viewGallery.classList.add("hidden");
+        viewAdmin.classList.add("hidden");
+
+        if (viewName === "admin") {
+          viewAdmin.classList.remove("hidden");
+          loadAdminData();
+          loadAdminFiles();
+        } else if (viewName === "gallery") {
+          viewGallery.classList.remove("hidden");
+          loadCloudFiles(false);
+        } else {
+          viewUpload.classList.remove("hidden");
+        }
+      }
+
+      let matrixInterval;
+
+      function startMatrixRain() {
+        const canvas = document.getElementById("matrixCanvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const katakana =
+          "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const nums = "0123456789";
+        const alphabet = katakana + latin + nums;
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const rainDrops = [];
+
+        for (let x = 0; x < columns; x++) {
+          rainDrops[x] = 1;
+        }
+
+        const draw = () => {
+          ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.fillStyle = "#0F0";
+          ctx.font = fontSize + "px monospace";
+
+          for (let i = 0; i < rainDrops.length; i++) {
+            const text = alphabet.charAt(
+              Math.floor(Math.random() * alphabet.length)
+            );
+            ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+            if (
+              rainDrops[i] * fontSize > canvas.height &&
+              Math.random() > 0.975
+            ) {
+              rainDrops[i] = 0;
+            }
+            rainDrops[i]++;
+          }
+        };
+        clearInterval(matrixInterval);
+        matrixInterval = setInterval(draw, 30);
+      }
+
+      function typeWriterLog() {
+        const logBox = document.getElementById("hackerLog");
+        if (!logBox) return;
+        logBox.innerHTML = "";
+        const lines = [
+          "> INITIALIZING BRUTE FORCE PROTOCOL...",
+          "> BYPASSING FIREWALL... [SUCCESS]",
+          "> ESTABLISHING SECURE CONNECTION...",
+          "> WAITING FOR ROOT KEY...",
+        ];
+
+        let i = 0;
+        let lineIndex = 0;
+
+        function typeLine() {
+          if (lineIndex < lines.length) {
+            const p = document.createElement("p");
+            p.innerText = lines[lineIndex];
+            logBox.appendChild(p);
+            lineIndex++;
+            setTimeout(typeLine, 400);
+          }
+        }
+        typeLine();
+      }
+
+      function openAdminModal() {
+        const modal = document.getElementById("adminPassModal");
+        modal.style.display = "flex";
+
+        modal.classList.remove("access-denied", "access-granted");
+        document
+          .querySelector(".glitch-text")
+          .setAttribute("data-text", "SYSTEM_ADMIN");
+        document.querySelector(".glitch-text").innerText = "SYSTEM_ADMIN";
+
+        document.getElementById("adminPassInput").value = "";
+        document.getElementById("adminPassInput").focus();
+
+        startMatrixRain();
+        typeWriterLog();
+      }
+
+      function closeAdminModal() {
+        const modal = document.getElementById("adminPassModal");
+        const title = document.querySelector(".glitch-text");
+
+        try {
+          if (title) {
+            if (typeof runTextScramble === "function") {
+              runTextScramble(title, "GOODBYE_ADMIN...", 20);
+            } else {
+              title.innerText = "GOODBYE_ADMIN...";
+            }
+
+            title.style.color = "#00ffff";
+            title.style.textShadow = "0 0 15px #00ffff";
+          }
+        } catch (e) { }
+
+        modal.classList.add("is-closing");
+
+        setTimeout(() => {
+          modal.style.display = "none";
+          modal.classList.remove("is-closing");
+
+          if (typeof matrixInterval !== "undefined")
+            clearInterval(matrixInterval);
+          const logBox = document.getElementById("hackerLog");
+          if (logBox) logBox.innerHTML = "";
+
+          if (title) {
+            title.style.color = "";
+            title.style.textShadow = "";
+            title.innerText = "SYSTEM_ADMIN";
+          }
+        }, 600);
+      }
+
+      async function verifyAdmin() {
+        const passInput = document.getElementById("adminPassInput");
+        const pass = passInput.value;
+        const modal = document.getElementById("adminPassModal");
+        const logBox = document.getElementById("hackerLog");
+        const loginBtn = document.querySelector("#adminPassModal .cyber-btn");
+
+        const originalBtnText =
+          '<span class="btn-content">INJECT_CODE</span><span class="btn-glitch"></span>';
+
+        const inputZone =
+          passInput.closest(".input-zone") ||
+          document.querySelector(".input-zone");
+
+        const triggerShake = () => {
+          if (inputZone) {
+            inputZone.classList.remove("input-error");
+            void inputZone.offsetWidth;
+            inputZone.classList.add("input-error");
+            passInput.focus();
+            setTimeout(() => {
+              inputZone.classList.remove("input-error");
+            }, 500);
+          }
+        };
+
+        const printLog = (text, color = "#00ff41") => {
+          const p = document.createElement("p");
+          p.innerText = `> ${text}`;
+          p.style.color = color;
+          p.style.textShadow = `0 0 5px ${color}`;
+          p.style.whiteSpace = "nowrap";
+          p.style.overflow = "hidden";
+          logBox.appendChild(p);
+          logBox.scrollTop = logBox.scrollHeight;
+        };
+
+        if (!pass) {
+          printLog("ERROR: NULL_INPUT_EXCEPTION", "#ff3333");
+          triggerShake();
+          return;
+        }
+
+        loginBtn.innerHTML = '<span class="btn-content">DECRYPTING...</span>';
+        loginBtn.disabled = true;
+
+        setTimeout(() => {
+          const HARDCODED_PASS = "__LEGACY_DISABLED__";
+
+          if (pass === HARDCODED_PASS) {
+            modal.classList.add("access-granted");
+            document.querySelector(".glitch-text").innerText = "ACCESS_GRANTED";
+            printLog("HASH MATCHED. KEY ACCEPTED.", "#00ffff");
+
+            currentAdminToken = "SESSION_AUTH";
+
+            setTimeout(() => {
+              closeAdminModal();
+              runHackerTransition(() => {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalBtnText;
+
+                if (serverSelect.options.length > 0) {
+                  adminServerSelect.innerHTML = serverSelect.innerHTML;
+                  adminServerSelect.value = serverSelect.value;
+                }
+
+                document.querySelector(".btn-admin").style.display = "none";
+                document.querySelector(".btn-warehouse").style.display = "none";
+                document.querySelector(".btn-export").style.display = "none";
+                switchView("admin");
+              });
+            }, 1000);
+          } else {
+            modal.classList.add("access-denied");
+            printLog("ACCESS DENIED: WRONG KEY.", "#ff3333");
+            triggerShake();
+
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<span class="btn-content">RETRY</span>';
+            passInput.value = "";
+
+            setTimeout(() => {
+              modal.classList.remove("access-denied");
+            }, 500);
+          }
+        }, 800);
+      }
+
+      document
+        .getElementById("adminPassInput")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") verifyAdmin();
+        });
+
+      function exitAdmin() {
+        const goodbyeMsg =
+          "SEE YOU AGAIN !<br><span style='font-size:18px; opacity:0.8'>SYSTEM DISCONNECTED...</span>";
+
+        runHackerTransition(() => {
+          currentAdminToken = "";
+          try { sessionStorage.removeItem("adminToken"); } catch (e) { }
+
+          document.querySelector(".btn-admin").style.display = "flex";
+          document.querySelector(".btn-warehouse").style.display = "flex";
+          document.querySelector(".btn-export").style.display = "flex";
+
+          const loginBtn = document.querySelector("#adminPassModal .cyber-btn");
+          if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML =
+              '<span class="btn-content">INJECT_CODE</span><span class="btn-glitch"></span>';
+          }
+
+          switchView("upload");
+
+          showToast("DISCONNECTED.", "success");
+        }, goodbyeMsg);
+      }
+
+      async function loadAdminData() {
+        const grid = document.getElementById("adminGrid");
+        grid.innerHTML =
+          '<div style="grid-column:1/-1; text-align:center;"><div class="spinner" style="margin:0 auto; width:40px; height:40px; border-color:var(--primary-color); border-top-color:transparent;"></div><p>Đang kiểm tra sức khỏe hệ thống...</p></div>';
+
+        try {
+          const res = await fetch(`${API_URL}/admin/stats-all`, {
+            headers: { "x-admin-pass": currentAdminToken },
+          });
+          const json = await res.json();
+
+          if (json.success) {
+            grid.innerHTML = "";
+            json.servers.forEach((sv) => {
+              let color = "var(--success-color)";
+              let statusText = `${sv.percent}% Full`;
+              let icon = '<i class="fa-solid fa-cloud"></i>';
+
+              if (sv.status === "error") {
+                color = "var(--danger-color)";
+                statusText = "Mất kết nối / Sai Key";
+                icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+              } else if (sv.status === "empty") {
+                color = "#b2bec3";
+                statusText = "Chưa cấu hình";
+                icon = '<i class="fa-regular fa-square"></i>';
+              } else if (sv.percent > 90) {
+                color = "var(--danger-color)";
+              } else if (sv.percent > 75) {
+                color = "#fdcb6e";
+              }
+
+              const card = document.createElement("div");
+              card.className = "admin-card";
+              card.innerHTML = `
+                  <h3 style="display:flex; justify-content:space-between; align-items:center;">
+                      <span>${icon} ${sv.name}</span>
+                      <span style="font-size:12px; padding:2px 8px; border-radius:10px; background:${color}; color:white;">
+                        ${sv.status === "online" ? "Online" : "Offline"}
+                      </span>
+                  </h3>
+                  
+                  <div class="admin-stat-row">
+                      <span>Đã dùng:</span>
+                      <span style="font-weight:700">${sv.usedGB} GB</span>
+                  </div>
+                  <div class="admin-stat-row">
+                      <span>Tổng dung lượng:</span>
+                      <span style="font-weight:700">${sv.totalGB} GB</span>
+                  </div>
+                  
+                  <div class="storage-bar-bg" style="height: 10px; margin: 15px 0;">
+                      <div class="storage-bar-fill" style="width: ${sv.percent
+                }%; background: ${color};"></div>
+                  </div>
+                  
+                  <div style="text-align:right; font-size:12px; font-weight:bold; color:${color}">
+                      ${statusText}
+                  </div>
+               `;
+              grid.appendChild(card);
+            });
+          } else {
+            grid.innerHTML = `<p style="color:red; text-align:center;">Lỗi: ${json.message}</p>`;
+          }
+        } catch (e) {
+          console.error(e);
+          grid.innerHTML =
+            '<p style="color:red; text-align:center;">Không thể kết nối đến Server!</p>';
+        }
+      }
+
+      async function loadAdminFiles() {
+        const index = adminServerSelect.value || 0;
+        adminFileList.innerHTML =
+          '<tr><td colspan="5" style="text-align:center;">Đang tải dữ liệu từ Cloudinary...</td></tr>';
+        btnDeleteDup.style.display = "none";
+        adminStatusMsg.innerText = "";
+        duplicateFiles = [];
+        adminFilesCache = [];
+
+        try {
+          const res = await fetch(`${API_URL}/admin/files/${index}`, {
+            headers: { "x-admin-pass": currentAdminToken },
+          });
+          const data = await res.json();
+
+          if (!data.success) {
+            adminFileList.innerHTML = `<tr><td colspan="5" style="color:red;">Lỗi: ${data.message}</td></tr>`;
+            return;
+          }
+
+          adminFilesCache = data.files || [];
+
+          globalUsedBytes = calculateRealTotalBytes(adminFilesCache);
+          updateStorageVisual();
+
+          adminStatusMsg.innerHTML = `Tổng số file: ${adminFilesCache.length}`;
+          renderAdminTable(adminFilesCache);
+        } catch (error) {
+          console.error(error);
+          adminFileList.innerHTML = `<tr><td colspan="5" style="color:red;">Lỗi kết nối Server</td></tr>`;
+        }
+      }
+
+      function renderAdminTable(files) {
+        const tbody = document.getElementById("adminFileList");
+        tbody.innerHTML = "";
+
+        document.getElementById("selectAllCheckbox").checked = false;
+        updateDeleteMultiBtn();
+
+        if (files.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="5" style="text-align:center;">Thư mục trống.</td></tr>';
+          return;
+        }
+
+        files.forEach((file) => {
+          const isDup = duplicateFiles.find(
+            (d) => d.public_id === file.public_id
+          );
+          const rowClass = isDup ? "duplicate-row" : "";
+          const sizeMB = (file.bytes / (1024 * 1024)).toFixed(2) + " MB";
+          const date = new Date(file.created_at).toLocaleString("vi-VN");
+          const displayName = file.filename || file.public_id;
+
+          const rType = file.resource_type || "image";
+
+          const tr = document.createElement("tr");
+          tr.className = rowClass;
+          tr.id = `row-${file.public_id}`;
+
+          tr.innerHTML = `
+    <td style="text-align: center;">
+        <input type="checkbox" class="file-checkbox" value="${file.public_id
+            }" data-type="${rType}" onchange="updateDeleteMultiBtn()">
+    </td>
+    <td>
+        <span class="admin-file-link" onclick="viewAdminFile('${file.public_id
+            }')">
+            <i class="fa-solid fa-eye"></i> ${displayName}.${file.format || ""}
+        </span>
+        ${isDup ? '<span class="dup-badge">Trùng lặp</span>' : ""}
+    </td>
+    <td>${sizeMB}</td>
+    <td>${date}</td>
+    <td>
+        <button class="btn btn-theme btn-sm" onclick="renameFile('${file.public_id
+            }', '${displayName.replace(/'/g, "\\'")}')" title="Đổi tên">
+             <i class="fa-solid fa-file-pen"></i>
+        </button>
+    
+        <button class="btn btn-clear btn-sm" onclick="deleteSingleFile('${file.public_id
+            }')" title="Xóa vĩnh viễn">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    </td>
+`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function viewAdminFile(fileId) {
+        const file = adminFilesCache.find((f) => f.public_id === fileId);
+        if (!file) return;
+
+        adminPreviewTitle.innerText = file.filename || file.public_id;
+
+        adminPreviewContent.innerHTML =
+          '<div style="text-align:center; color:#00ff41; padding:50px;">' +
+          '<i class="fa-solid fa-terminal fa-fade fa-2x"></i><br><br>' +
+          "DECODING_BINARY_DATA..." +
+          "</div>";
+
+        const btnDelete = document.getElementById("btnDeleteInModal");
+        btnDelete.innerHTML =
+          '<i class="fa-solid fa-trash-can"></i> DESTROY_FILE';
+
+        btnDelete.onclick = async () => {
+          if (
+            confirm(
+              `WARNING: PERMANENT DELETION DETECTED.\nTarget: ${file.filename || file.public_id
+              }\nProceed?`
+            )
+          ) {
+            const success = await performDeleteInModal(file.public_id);
+            if (success) {
+              closeAdminPreview();
+              showToast("FILE_ELIMINATED.", "success");
+            }
+          }
+        };
+
+        let previewHtml = "";
+        const type = file.resource_type || "image";
+        const link = file.secure_url;
+
+        if (type === "image") {
+          previewHtml = `
+            <div class="crt-frame">
+                <img src="${link}" class="modal-img-preview" 
+                     style="max-height: 60vh; max-width: 100%; object-fit: contain; filter: contrast(1.2) brightness(1.1);" />
+            </div>`;
+        } else if (type === "video") {
+          previewHtml = `
+            <div class="crt-frame">
+                <video src="${link}" controls width="100%" height="400" 
+                       style="background:black; filter: contrast(1.1);"></video>
+            </div>`;
+        } else {
+          previewHtml = `
+            <div class="crt-frame" style="padding: 40px; text-align: center; color: #00ff41;">
+                <i class="fa-solid fa-file-code fa-4x"></i>
+                <p style="margin-top:20px;">BINARY_DATA_ONLY</p>
+                <p style="font-size:12px; opacity:0.7;">[NO_PREVIEW_AVAILABLE]</p>
+            </div>`;
+        }
+
+        setTimeout(() => {
+          adminPreviewContent.innerHTML = previewHtml;
+        }, 300);
+
+        adminPreviewModal.style.display = "flex";
+      }
+
+      async function performDeleteInModal(fileId) {
+        const serverIndex =
+          document.getElementById("adminServerSelect").value || 0;
+        try {
+          const res = await fetch(
+            `${API_URL}/admin/files/${serverIndex}/${encodeURIComponent(
+              fileId
+            )}`,
+            {
+              method: "DELETE",
+              headers: { "x-admin-pass": currentAdminToken },
+            }
+          );
+          const data = await res.json();
+          if (data.success) {
+            const row = document.getElementById(`row-${fileId}`);
+            if (row) row.remove();
+
+            adminFilesCache = adminFilesCache.filter(
+              (f) => f.public_id !== fileId
+            );
+
+            globalUsedBytes = calculateRealTotalBytes(adminFilesCache);
+            updateStorageVisual();
+            adminStatusMsg.innerHTML = `Tổng số file: ${adminFilesCache.length}`;
+
+            return true;
+          } else {
+            alert("Lỗi: " + data.message);
+            return false;
+          }
+        } catch (e) {
+          alert("Lỗi kết nối server");
+          return false;
+        }
+      }
+
+      function closeAdminPreview() {
+        adminPreviewModal.style.display = "none";
+        adminPreviewContent.innerHTML = "";
+      }
+      adminPreviewModal.addEventListener("click", (e) => {
+        if (e.target === adminPreviewModal) closeAdminPreview();
+      });
+
+      function scanDuplicates() {
+        if (adminFilesCache.length === 0) return;
+
+        const map = new Map();
+        duplicateFiles = [];
+
+        adminFilesCache.forEach((file) => {
+          const key = `${file.bytes}_${file.format}`;
+          if (!map.has(key)) {
+            map.set(key, []);
+          }
+          map.get(key).push(file);
+        });
+
+        let groupCount = 0;
+        map.forEach((group) => {
+          if (group.length > 1) {
+            groupCount++;
+
+            group.sort(
+              (a, b) => new Date(a.created_at) - new Date(b.created_at)
+            );
+
+            for (let i = 1; i < group.length; i++) {
+              duplicateFiles.push(group[i]);
+            }
+          }
+        });
+
+        if (duplicateFiles.length > 0) {
+          adminStatusMsg.innerHTML = `<span style="color:var(--warning-color)">⚠️ Tìm thấy ${duplicateFiles.length} file có thể trùng (trong ${groupCount} nhóm).</span>`;
+          btnDeleteDup.style.display = "inline-flex";
+          renderAdminTable(adminFilesCache);
+        } else {
+          showToast("Không tìm thấy file trùng lặp!");
+          adminStatusMsg.innerHTML =
+            "File hệ thống sạch sẽ, không có trùng lặp.";
+        }
+      }
+
+      async function deleteSingleFile(fileId) {
+        if (!confirm("Bạn chắc chắn muốn xóa file này vĩnh viễn?")) return;
+
+        const index = adminServerSelect.value;
+        try {
+          const res = await fetch(
+            `${API_URL}/admin/files/${index}/${encodeURIComponent(fileId)}`,
+            {
+              method: "DELETE",
+              headers: { "x-admin-pass": currentAdminToken },
+            }
+          );
+          const data = await res.json();
+
+          if (data.success) {
+            const row = document.getElementById(`row-${fileId}`);
+            if (row) row.remove();
+
+            adminFilesCache = adminFilesCache.filter(
+              (f) => f.public_id !== fileId
+            );
+
+            globalUsedBytes = calculateRealTotalBytes(adminFilesCache);
+            updateStorageVisual();
+            adminStatusMsg.innerHTML = `Tổng số file: ${adminFilesCache.length}`;
+
+            showToast("Đã xóa file.");
+          } else {
+            showToast("Lỗi: " + data.message, "error");
+          }
+        } catch (e) {
+          showToast("Lỗi kết nối", "error");
+        }
+      }
+
+      async function deleteDuplicates() {
+        if (
+          !confirm(
+            `CẢNH BÁO: Bạn sắp xóa vĩnh viễn ${duplicateFiles.length} file trùng lặp. Hành động này không thể hoàn tác. Tiếp tục?`
+          )
+        )
+          return;
+
+        btnDeleteDup.disabled = true;
+        btnDeleteDup.innerHTML =
+          '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang xóa...';
+
+        let count = 0;
+        const index = adminServerSelect.value;
+
+        for (const file of duplicateFiles) {
+          try {
+            const res = await fetch(
+              `${API_URL}/admin/files/${index}/${encodeURIComponent(
+                file.public_id
+              )}`,
+              {
+                method: "DELETE",
+                headers: { "x-admin-pass": currentAdminToken },
+              }
+            );
+            const data = await res.json();
+            if (data.success) {
+              count++;
+              const row = document.getElementById(`row-${file.public_id}`);
+              if (row) row.remove();
+            }
+          } catch (e) {
+            console.log(e);
+          }
+        }
+
+        btnDeleteDup.style.display = "none";
+        btnDeleteDup.disabled = false;
+        btnDeleteDup.innerHTML =
+          '<i class="fa-solid fa-trash-can"></i> Xóa tất cả file trùng';
+
+        showToast(`Đã xóa sạch ${count} file trùng lặp!`, "success");
+        setTimeout(loadAdminFiles, 1000);
+      }
+
+      async function loadCloudFiles(isSilent = false) {
+        if (!isSilent && !lastDataSignature) {
+          historyGrid.innerHTML =
+            '<div style="grid-column:1/-1; text-align:center; padding:40px;"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary-color)"></i><p>Đang đồng bộ dữ liệu từ Cloud...</p></div>';
+        }
+        try {
+          const index = serverSelect.value || 0;
+          const res = await fetch(`${API_URL}/files?index=${index}`);
+          const json = await res.json();
+
+          if (json.success) {
+            globalUsedBytes = calculateRealTotalBytes(json.files);
+            updateStorageVisual();
+
+            const currentSignature = JSON.stringify(
+              json.files.map((f) => f.public_id)
+            );
+
+            if (lastDataSignature === currentSignature) return;
+
+            lastDataSignature = currentSignature;
+
+            if (json.files.length > 0) {
+              historyGrid.innerHTML = "";
+              json.files.forEach((file) => {
+                const item = processCloudData(file);
+                const card = createHistoryCard(item);
+                historyGrid.appendChild(card);
+              });
+            } else {
+              historyGrid.innerHTML =
+                '<div style="grid-column:1/-1; text-align:center; padding: 40px; color: var(--text-secondary)"><i class="fa-regular fa-folder-open fa-3x"></i><p>Thư mục trống</p></div>';
+            }
+          }
+        } catch (e) {
+          console.error(e);
+          if (!isSilent) {
+            historyGrid.innerHTML =
+              '<div style="grid-column:1/-1; text-align:center; color:#ff7675; padding: 20px;">Lỗi kết nối Server!</div>';
+          }
+        }
+      }
+
+
+      function guessTypeFromUrl(url) {
+        const clean = (url || "").split("?")[0].toLowerCase();
+        const ext = clean.includes(".") ? clean.split(".").pop() : "";
+        const img = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "avif", "tiff"];
+        const vid = ["mp4", "webm", "mov", "mkv", "avi", "m4v"];
+        const aud = ["mp3", "wav", "ogg", "m4a", "aac", "flac"];
+        if (img.includes(ext)) return "image";
+        if (vid.includes(ext)) return "video";
+        if (aud.includes(ext)) return "audio";
+        return "file";
+      }
+
+      function processCloudData(file, originalFile = null) {
+        const secureUrl = file?.secure_url || file?.url || "";
+        const rType = (file?.resource_type || "").toLowerCase();
+
+        // Format: prefer API value; fallback from URL or original file name
+        let fmt =
+          (file?.format || "").toLowerCase() ||
+          (secureUrl ? secureUrl.split("?")[0].split(".").pop() : "") ||
+          (originalFile?.name ? originalFile.name.split(".").pop() : "");
+        fmt = (fmt || "").toLowerCase();
+
+        // Robust type detection
+        let type = "file";
+        if (rType === "image") {
+          type = "image";
+        } else if (rType === "video") {
+          if (["mp3", "wav", "ogg", "m4a", "aac", "flac"].includes(fmt)) type = "audio";
+          else type = "video";
+        } else if (rType === "raw") {
+          if (["mp3", "wav", "ogg", "m4a", "aac", "flac"].includes(fmt)) type = "audio";
+          else type = "file";
+        } else {
+          const mime = (originalFile?.type || "").toLowerCase();
+          if (mime.startsWith("image/")) type = "image";
+          else if (mime.startsWith("video/")) type = "video";
+          else if (mime.startsWith("audio/")) type = "audio";
+          else type = guessTypeFromUrl(secureUrl || ("x." + fmt));
+        }
+
+        // Name: prefer Cloudinary + fallback to local file name
+        let name =
+          file?.original_filename ||
+          file?.filename ||
+          file?.public_id ||
+          originalFile?.name ||
+          "file";
+
+        if (fmt && !name.toLowerCase().endsWith("." + fmt)) {
+          name += `.${fmt}`;
+        }
+
+        return {
+          id: file?.public_id || name,
+          name: name,
+          thumb: secureUrl,
+          type: type,
+          playerLink: secureUrl,
+          driveLink: secureUrl,
+          directImageLink: secureUrl,
+          format: fmt,
+          createdAt: file?.created_at,
+        };
+      }
+
+
+      function createHistoryCard(item) {
+        const card = document.createElement("div");
+        card.className = "history-card";
+
+        const dateStr = item.createdAt
+          ? new Date(item.createdAt).toLocaleString("vi-VN")
+          : "";
+        card.title = `${item.name}\nNgày up: ${dateStr}`;
+
+        card.onclick = () => openModal(item);
+
+        let icon = "";
+        if (item.type === "video") icon = '<i class="fa-solid fa-video"></i>';
+        if (item.type === "audio") icon = '<i class="fa-solid fa-music"></i>';
+        if (item.type === "file")
+          icon = '<i class="fa-solid fa-file-zipper"></i>';
+
+        let imgSrc = item.thumb;
+
+        if (item.type === "video") {
+          if (imgSrc.endsWith(".mp4") || imgSrc.endsWith(".webm")) {
+            imgSrc = imgSrc.substring(0, imgSrc.lastIndexOf(".")) + ".jpg";
+          } else {
+            imgSrc += ".jpg";
+          }
+        }
+
+        if (item.type === "audio" || item.type === "file") {
+          imgSrc = "https://cdn-icons-png.flaticon.com/512/2965/2965358.png";
+          if (item.type === "file")
+            imgSrc = "https://cdn-icons-png.flaticon.com/512/2965/2965335.png";
+        }
+
+        card.innerHTML = `
+            <img src="${imgSrc}" class="history-thumb" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/150?text=File'"/>
+            ${icon ? `<div class="history-type-icon">${icon}</div>` : ""}
+        `;
+        return card;
+      }
+
+      function changeServer() {
+        localStorage.setItem("currentServerIndex", serverSelect.value);
+
+        lastDataSignature = null;
+        globalUsedBytes = 0;
+
+        updateStorageVisual();
+
+        loadStats(true);
+
+        if (!viewAdmin.classList.contains("hidden")) {
+          adminServerSelect.value = serverSelect.value;
+          loadAdminFiles();
+        } else {
+          const isGalleryOpen = !viewGallery.classList.contains("hidden");
+
+          loadCloudFiles(!isGalleryOpen);
+        }
+
+        const serverName =
+          serverSelect.options[serverSelect.selectedIndex].text;
+        showToast(`Đã chuyển sang: ${serverName}`);
+      }
+
+      function renderItem(item) {
+        const div = document.createElement("div");
+        div.className = "result-item";
+        div.style.animationDelay = "0.1s";
+        let thumbHTML = "";
+
+        if (item.type === "image") {
+          thumbHTML = `<img src="${item.directImageLink}" class="thumb-img" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='https://cdn-icons-png.flaticon.com/512/3342/3342137.png'" />`;
+        } else if (item.type === "video") {
+          thumbHTML = `
+      <div class="video-placeholder" id="video-place-${item.id}" style="background:#000;">
+          <video src="${item.playerLink}" style="width:100%; height:100%; object-fit:cover;" controls></video>
+      </div>
+      <div class="video-controls">
+         <a href="${item.playerLink}" target="_blank" class="btn-play btn-google" style="text-decoration:none">
+            <i class="fa-solid fa-up-right-from-square"></i> Mở tab mới
+         </a>
+      </div>
+    `;
+        } else if (item.type === "audio") {
+          thumbHTML = `
+      <div style="width:100%; display:flex; flex-direction:column; align-items:center; gap:10px;">
+          <div class="audio-icon-box" style="width:100%; height:100px;">
+              <i class="fa-solid fa-music fa-2x"></i>
+              <span style="font-size:10px; margin-top:5px; padding:0 10px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${item.name}</span>
+          </div>
+          <audio controls style="width:100%">
+            <source src="${item.playerLink}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>
+      </div>
+      `;
+        } else
+          thumbHTML = `<div class="file-icon"><i class="fa-solid fa-file-zipper"></i></div>`;
+
+        let linkXemContent = item.playerLink;
+        if (item.type === "image") linkXemContent = item.directImageLink;
+
+        let downloadLink = item.driveLink;
+        let downloadLabel = "Link Gốc (Secure)";
+
+        if (item.type === "image") {
+          const insertIndex = downloadLink.indexOf("/upload/") + 8;
+          if (insertIndex > 7) {
+            const transformation =
+              "q_100,fl_attachment,w_1920,c_limit,e_sharpen:100/";
+            downloadLink =
+              downloadLink.slice(0, insertIndex) +
+              transformation +
+              downloadLink.slice(insertIndex);
+
+            downloadLabel = "Link Tải Full HD (Upscale)";
+          }
+        }
+
+        const htmlCode =
+          item.type === "image"
+            ? `<img src="${item.directImageLink}" alt="${item.name}" />`
+            : `<video src="${item.playerLink}" controls width="640"></video>`;
+
+        div.innerHTML = `
+  <div class="thumb-col">${thumbHTML}</div>
+  <div class="links-col">
+      ${createInputRow("Link Trực Tiếp (Cloudinary)", linkXemContent)}
+      
+      ${createInputRow(downloadLabel, downloadLink)} 
+      
+      ${createInputRow("Mã Nhúng (HTML)", htmlCode)}
+      ${item.type === "image"
+            ? createInputRow(
+              "Markdown",
+              `![${item.name}](${item.directImageLink})`
+            )
+            : ""
+          }
+  </div>`;
+        const thumbColEl = div.querySelector(".thumb-col");
+        if (thumbColEl) {
+          thumbColEl.style.cursor = "pointer";
+          thumbColEl.title = "Bấm để xem chi tiết";
+          thumbColEl.addEventListener("click", () => openModal(item));
+        }
+        resultList.prepend(div);
+      }
+
+      function openModal(item) {
+        modalTitle.innerText = item.name;
+        modalLinks.innerHTML = "";
+        modalPreview.innerHTML = "";
+
+        let linkXemContent = item.playerLink;
+        if (item.type === "image") linkXemContent = item.directImageLink;
+
+        const htmlCode =
+          item.type === "image"
+            ? `<img src="${item.directImageLink}" alt="${item.name}" />`
+            : `<video src="${item.playerLink}" controls width="640"></video>`;
+
+        if (item.type === "image") {
+          modalPreview.innerHTML = `<img src="${item.directImageLink}" class="modal-img-preview" referrerpolicy="no-referrer" />`;
+        } else if (item.type === "video") {
+          modalPreview.innerHTML = `<video src="${item.playerLink}" controls width="100%" height="100%" style="max-height:350px"></video>`;
+        } else if (item.type === "audio") {
+          modalPreview.innerHTML = `
+      <div style="text-align:center; color:white;">
+          <i class="fa-solid fa-music fa-3x" style="margin-bottom:10px"></i><br>
+          <audio controls style="width:100%">
+            <source src="${item.playerLink}" type="audio/mpeg">
+          </audio>
+      </div>
+      `;
+        } else {
+          modalPreview.innerHTML = `<i class="fa-solid fa-file-zipper fa-4x" style="color:white"></i>`;
+        }
+
+        let downloadLink = item.driveLink;
+        let downloadLabel = "Link Gốc (Secure)";
+
+        if (item.type === "image") {
+          const insertIndex = downloadLink.indexOf("/upload/") + 8;
+          if (insertIndex > 7) {
+            const transformation =
+              "q_100,fl_attachment,w_1920,c_limit,e_sharpen:100/";
+            downloadLink =
+              downloadLink.slice(0, insertIndex) +
+              transformation +
+              downloadLink.slice(insertIndex);
+            downloadLabel = "Link Tải Full HD (Upscale)";
+          }
+        }
+
+        modalLinks.innerHTML += createInputRow(
+          "Link Trực Tiếp",
+          linkXemContent
+        );
+
+        modalLinks.innerHTML += createInputRow(downloadLabel, downloadLink);
+
+        modalLinks.innerHTML += createInputRow("Mã Nhúng", htmlCode);
+
+        if (item.type === "image") {
+          modalLinks.innerHTML += createInputRow(
+            "Markdown",
+            `![${item.name}](${item.directImageLink})`
+          );
+        }
+
+        linkModal.style.display = "flex";
+
+        setTimeout(() => {
+          const content = linkModal.querySelector(".modal-content");
+          if (content) {
+            content.style.opacity = "0";
+            content.style.transform = "scale(0.8)";
+            setTimeout(() => {
+              content.style.transition =
+                "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
+              content.style.opacity = "1";
+              content.style.transform = "scale(1)";
+            }, 50);
+          }
+        }, 10);
+      }
+
+      function closeModal() {
+        linkModal.style.display = "none";
+        modalPreview.innerHTML = "";
+      }
+      linkModal.addEventListener("click", (e) => {
+        if (e.target === linkModal) closeModal();
+      });
+
+      function playVideo(id, playerLink) {
+        const container = document.getElementById(`video-place-${id}`);
+        container.innerHTML = `<video src="${playerLink}" width="100%" height="100%" controls autoplay></video>`;
+        container.style.background = "black";
+      }
+
+
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function toB64(str) {
+        try {
+          return btoa(unescape(encodeURIComponent(String(str ?? ""))));
+        } catch (e) {
+          // Fallback (should be rare)
+          return btoa(String(str ?? ""));
+        }
+      }
+
+      function fromB64(b64) {
+        try {
+          return decodeURIComponent(escape(atob(b64)));
+        } catch (e) {
+          return atob(b64);
+        }
+      }
+
+      function createInputRow(label, value) {
+        const raw = String(value ?? "");
+        const safeLabel = escapeHtml(label);
+        const safeValue = escapeHtml(raw);
+        const b64 = toB64(raw);
+        const isUrl = /^https?:\/\//i.test(raw);
+
+        return `
+  <div class="input-group">
+    <label class="input-label">${safeLabel}</label>
+    <div class="input-wrapper">
+      <input type="text" class="link-input" value="${safeValue}" readonly>
+      <button class="btn-copy" type="button" data-copy-b64="${b64}" title="Copy">
+        <i class="fa-regular fa-copy"></i>
+      </button>
+      ${isUrl
+            ? `<a class="btn-open" href="${safeValue}" target="_blank" rel="noopener noreferrer" title="Mở link">
+             <i class="fa-solid fa-up-right-from-square"></i>
+           </a>`
+            : ""}
+    </div>
+  </div>`;
+      }
+
+
+      function copyToClipboard(btn, text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const i = btn.querySelector("i");
+          i.className = "fa-solid fa-check";
+          i.style.color = "#fff";
+          btn.style.background = "#00b894";
+          setTimeout(() => {
+            i.className = "fa-regular fa-copy";
+            btn.style.background = "";
+          }, 1500);
+        });
+      }
+
+      // Event delegation: copy buttons inside both Result List + Modal
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-copy-b64]");
+        if (!btn) return;
+
+        const b64 = btn.getAttribute("data-copy-b64") || "";
+        const text = fromB64(b64);
+
+        copyToClipboard(btn, text);
+      });
+
+
+      function showToast(m, t = "success") {
+        const d = document.createElement("div");
+        d.className = `toast ${t}`;
+        d.innerHTML = `<i class="fa-solid ${t === "success" ? "fa-circle-check" : "fa-circle-exclamation"
+          }"></i><span>${m}</span>`;
+        toastContainer.appendChild(d);
+        setTimeout(() => {
+          d.style.animation = "slideLeft 0.4s reverse forwards";
+          setTimeout(() => d.remove(), 400);
+        }, 3000);
+      }
+      function initTheme() {
+        document.documentElement.setAttribute(
+          "data-theme",
+          localStorage.getItem("theme") || "light"
+        );
+        updateThemeIcon(localStorage.getItem("theme") || "light");
+      }
+      function toggleTheme() {
+        const n =
+          document.documentElement.getAttribute("data-theme") === "dark"
+            ? "light"
+            : "dark";
+        document.documentElement.setAttribute("data-theme", n);
+        localStorage.setItem("theme", n);
+        updateThemeIcon(n);
+      }
+      function updateThemeIcon(t) {
+        document.getElementById("theme-icon").className =
+          t === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      }
+
+      function createSnow() {
+        const container = document.getElementById("snow-container");
+        container.innerHTML = "";
+        const count = 50;
+
+        for (let i = 0; i < count; i++) {
+          const flake = document.createElement("div");
+          flake.className = "snowflake";
+
+          const size = Math.random() * 6 + 2;
+          const opacity = Math.random() * 0.7 + 0.3;
+          const duration = Math.random() * 10 + 10;
+          const delay = Math.random() * -20;
+          const blur = Math.random() * 2;
+
+          Object.assign(flake.style, {
+            width: `${size}px`,
+            height: `${size}px`,
+            left: `${Math.random() * 100}vw`,
+            opacity: opacity,
+            filter: `blur(${blur}px)`,
+            animationDuration: `${duration}s, ${Math.random() * 3 + 2}s`,
+            animationDelay: `${delay}s, ${Math.random() * 5}s`,
+          });
+
+          container.appendChild(flake);
+        }
+      }
+
+      async function autoCheckAdmin() {
+        return false;
+      }
+
+      window.onload = () => {
+        initTheme();
+        createSnow();
+        loadServers();
+        updateUploadedCounterUI();
+
+        loadCloudFiles(true);
+      };
+
+      const title = document.querySelector(".title");
+      title.innerHTML = title.innerText
+        .split("")
+        .map(
+          (char, i) =>
+            `<span style="display:inline-block; animation: wave 2s infinite ${i * 0.1
+            }s">${char === " " ? "&nbsp;" : char}</span>`
+        )
+        .join("");
+
+
+      // =========================
+      // Recent list (SESSION ONLY)
+      // - Hiển thị ngay sau khi upload xong
+      // - Reset/Reload trang sẽ mất (không lưu localStorage)
+      // =========================
+      let recentSessionList = [];
+
+      function addToRecent(item, originalFile = null) {
+        if (!item) return;
+
+        // Ensure we have something to preview even if server doesn't return URL
+        const hasUrl =
+          (item.directImageLink && String(item.directImageLink).trim()) ||
+          (item.playerLink && String(item.playerLink).trim());
+
+        if (!hasUrl && originalFile instanceof File) {
+          try {
+            const objUrl = URL.createObjectURL(originalFile);
+            item.directImageLink = objUrl;
+            item.playerLink = objUrl;
+            item.driveLink = objUrl;
+            item.thumb = objUrl;
+            // If type is unknown, infer from MIME
+            const mime = (originalFile.type || "").toLowerCase();
+            if (!item.type || item.type === "file") {
+              if (mime.startsWith("image/")) item.type = "image";
+              else if (mime.startsWith("video/")) item.type = "video";
+              else if (mime.startsWith("audio/")) item.type = "audio";
+            }
+          } catch (e) {
+            console.warn("Cannot createObjectURL for preview:", e);
+          }
+        }
+
+        // De-dup by id then push (most recent last)
+        recentSessionList = recentSessionList.filter((x) => x && x.id !== item.id);
+        recentSessionList.push(item);
+
+        // Render immediately
+        renderItem(item);
+      }
+
+      function saveHistory(i) {
+        let l = JSON.parse(localStorage.getItem("uploadHistory")) || [];
+        l = l.filter((x) => x.id !== i.id);
+        l.push(i);
+        if (l.length > 100) l.shift();
+        localStorage.setItem("uploadHistory", JSON.stringify(l));
+      }
+
+      function clearResultList() {
+        recentSessionList = [];
+        const list = document.getElementById("resultList");
+        if (!list.innerHTML.trim()) {
+          showToast("Danh sách đã trống!", "error");
+          return;
+        }
+        if (confirm("Bạn có chắc muốn xóa danh sách các file vừa upload?")) {
+          list.style.opacity = "0";
+          list.style.transform = "translateY(10px)";
+          setTimeout(() => {
+            list.innerHTML = "";
+            list.style.opacity = "1";
+            list.style.transform = "translateY(0)";
+            showToast("Đã làm mới danh sách.");
+          }, 300);
+        }
+      }
+
+      document.addEventListener("paste", function (event) {
+        if (viewUpload.classList.contains("hidden")) return;
+        const items = (event.clipboardData || event.originalEvent.clipboardData)
+          .items;
+        const files = [];
+        for (let index in items) {
+          const item = items[index];
+          if (item.kind === "file") {
+            const blob = item.getAsFile();
+            files.push(blob);
+          }
+        }
+        if (files.length > 0) {
+          showToast("Đang đọc dữ liệu từ Clipboard...");
+          handleFiles(files);
+        }
+      });
+
+      adminPassInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          verifyAdmin();
+        }
+      });
+
+      async function loadServers() {
+        try {
+          const res = await fetch(`${API_URL}/accounts`);
+          const json = await res.json();
+
+          if (json.success && json.accounts.length > 0) {
+            serverSelect.innerHTML = json.accounts
+              .map((acc) => `<option value="${acc.index}">${acc.name}</option>`)
+              .join("");
+          } else {
+            serverSelect.innerHTML = `<option value="0">Cloud Mặc định</option>`;
+          }
+
+          const savedIndex = localStorage.getItem("currentServerIndex");
+          if (savedIndex) {
+            const optionExists = [...serverSelect.options].some(
+              (o) => o.value === savedIndex
+            );
+            if (optionExists) {
+              serverSelect.value = savedIndex;
+            }
+          }
+
+          loadStats();
+        } catch (e) {
+          console.warn("Chưa kết nối được Server danh sách");
+          serverSelect.innerHTML = `<option value="0">Cloud Offline</option>`;
+          document.getElementById("count-drive").innerText = "Offline";
+        }
+      }
+
+      async function loadStats(force = false) {
+        const elCount = document.getElementById("count-drive");
+        const elUsed = document.getElementById("storage-used");
+        const elTotal = document.getElementById("storage-total");
+        const elBar = document.getElementById("storage-bar");
+        const refreshIcon = document.querySelector(".refresh-btn i");
+
+        const resetUI = (msg, color, barColor) => {
+          elCount.innerText = msg;
+          elCount.style.color = color;
+          elUsed.innerText = "0 GB";
+          elTotal.innerText = "0 GB";
+          elBar.style.width = "0%";
+          elBar.style.background = barColor;
+        };
+
+        try {
+          if (force && refreshIcon) refreshIcon.classList.add("fa-spin");
+
+          const index = serverSelect.value || 0;
+
+          const res = await fetch(`${API_URL}/stats?index=${index}`);
+          const json = await res.json();
+
+          if (json.success) {
+            if (json.isEmpty) {
+              resetUI("Chưa kết nối", "#b2bec3", "#dfe6e9");
+            } else if (json.isAuthError) {
+              resetUI("Sai API Key", "#fdcb6e", "#dfe6e9");
+            } else {
+              elCount.innerText = json.totalFiles;
+              elCount.style.color = "var(--text-color)";
+
+              if (json.storage) {
+                globalTotalBytes =
+                  parseFloat(json.storage.total) * 1024 * 1024 * 1024;
+
+                if (globalUsedBytes === 0 && json.storage.used > 0) {
+                  globalUsedBytes =
+                    parseFloat(json.storage.used) * 1024 * 1024 * 1024;
+                }
+
+                updateStorageVisual();
+              }
+            }
+          } else {
+            resetUI("Offline", "#ff7675", "#dfe6e9");
+          }
+        } catch (err) {
+          console.warn("Network Error:", err);
+          resetUI("Offline", "#ff7675", "#dfe6e9");
+        } finally {
+          if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+        }
+      }
+
+
+      // ===== Upload Overlay (Real Progress) =====
+      function clamp(n, min, max) {
+        return Math.max(min, Math.min(max, n));
+      }
+
+      function rafThrottle(fn) {
+        let rafId = 0;
+        let lastArgs = null;
+        return (...args) => {
+          lastArgs = args;
+          if (rafId) return;
+          rafId = requestAnimationFrame(() => {
+            rafId = 0;
+            fn(...(lastArgs || []));
+          });
+        };
+      }
+
+      function ensureUploadOverlayUI() {
+        const loadingBox = document.getElementById("loadingBox");
+        if (!loadingBox) return {};
+
+        // Preview
+        let preview = document.getElementById("real-upload-preview");
+        if (!preview) {
+          preview = document.createElement("img");
+          preview.id = "real-upload-preview";
+          preview.className = "upload-preview hidden";
+          preview.alt = "upload preview";
+
+          // Insert after spinner
+          const spinner = loadingBox.querySelector(".spinner");
+          if (spinner && spinner.parentNode) {
+            spinner.insertAdjacentElement("afterend", preview);
+          } else {
+            loadingBox.appendChild(preview);
+          }
+        }
+
+        // Meta line
+        let meta = document.getElementById("real-progress-meta");
+        if (!meta) {
+          meta = document.createElement("div");
+          meta.id = "real-progress-meta";
+          meta.className = "upload-meta";
+          meta.innerHTML =
+            '<span class="upload-meta-left">Đang chuẩn bị...</span><span class="upload-meta-right">0%</span>';
+          loadingBox.appendChild(meta);
+        }
+
+        // Progress bar
+        let barFill = document.getElementById("real-progress-fill");
+        if (!barFill) {
+          const container = document.createElement("div");
+          container.className = "progress-container";
+
+          barFill = document.createElement("div");
+          barFill.id = "real-progress-fill";
+          barFill.className = "progress-bar-fill";
+
+          container.appendChild(barFill);
+          loadingBox.appendChild(container);
+        }
+
+        let loadingText = loadingBox.querySelector("p");
+        return { loadingBox, barFill, loadingText, preview, meta };
+      }
+
+      function setOverlayPreview(previewEl, srcOrFile) {
+        if (!previewEl) return;
+
+        // Revoke previous blob URL if any
+        try {
+          const old = previewEl.dataset.objectUrl;
+          if (old) URL.revokeObjectURL(old);
+        } catch (e) { }
+
+        previewEl.dataset.objectUrl = "";
+
+        // Decide source
+        if (typeof srcOrFile === "string") {
+          previewEl.src = srcOrFile;
+          previewEl.classList.remove("hidden");
+          return;
+        }
+
+        const file = srcOrFile;
+        if (file && file.type && file.type.startsWith("image/")) {
+          const objUrl = URL.createObjectURL(file);
+          previewEl.dataset.objectUrl = objUrl;
+          previewEl.src = objUrl;
+          previewEl.classList.remove("hidden");
+          return;
+        }
+
+        // Fallback icon preview (non-image)
+        previewEl.src = "https://cdn-icons-png.flaticon.com/512/2965/2965335.png";
+        previewEl.classList.remove("hidden");
+      }
+
+
+      async function uploadFromUrl() {
+        const url = urlInput.value.trim();
+        if (!url) {
+          showToast("Vui lòng nhập link ảnh!", "error");
+          return;
+        }
+
+        const ui = ensureUploadOverlayUI();
+        if (ui.loadingBox) ui.loadingBox.style.display = "flex";
+        if (ui.barFill) {
+          ui.barFill.classList.add("indeterminate");
+          ui.barFill.style.width = "40%";
+        }
+        if (ui.loadingText) ui.loadingText.innerText = "SERVER ĐANG TẢI ẢNH TỪ URL...";
+        if (ui.meta) {
+          ui.meta.querySelector(".upload-meta-left").innerText = "Upload URL";
+          ui.meta.querySelector(".upload-meta-right").innerText = "—";
+        }
+        setOverlayPreview(ui.preview, url);
+
+        try {
+          const currentServerIndex = serverSelect.value || 0;
+          const res = await fetch(`${API_URL}/upload-url`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              url: url,
+              accountIndex: currentServerIndex,
+            }),
+          });
+          const json = await res.json();
+
+          if (json.success) {
+            const currentDriveCount =
+              parseInt(document.getElementById("count-drive").innerText) || 0;
+            document.getElementById("count-drive").innerText = currentDriveCount + 1;
+
+            increaseUploadCount();
+
+            if (json.data && json.data.bytes) {
+              globalUsedBytes += parseInt(json.data.bytes);
+              updateStorageVisual();
+            }
+
+            const item = processCloudData(json.data);
+            addToRecent(item);
+
+            urlInput.value = "";
+            showToast("Upload thành công!", "success");
+            lastDataSignature = null;
+
+            if (ui.barFill) {
+              ui.barFill.classList.remove("indeterminate");
+              ui.barFill.style.width = "100%";
+            }
+            if (ui.meta) ui.meta.querySelector(".upload-meta-right").innerText = "100%";
+
+            await new Promise((r) => setTimeout(r, 350));
+          } else {
+            showToast(
+              "Lỗi Server: " + (json.message || "Không thể upload"),
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Lỗi kết nối Server!", "error");
+        } finally {
+          if (ui.loadingBox) ui.loadingBox.style.display = "none";
+        }
+      }
+
+
+      function exportHistory() {
+        const historyData = localStorage.getItem("uploadHistory");
+        if (!historyData) {
+          showToast("Chưa có lịch sử để sao lưu!", "error");
+          return;
+        }
+        const blob = new Blob([historyData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `upload_history_backup_${new Date()
+          .toISOString()
+          .slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast("Đã tải xuống file backup!", "success");
+      }
+
+
+      async function handleFiles(files) {
+        if (!files || files.length === 0) return;
+
+        const ui = ensureUploadOverlayUI();
+        if (!ui.loadingBox) return;
+
+        ui.loadingBox.style.display = "flex";
+        if (ui.barFill) {
+          ui.barFill.classList.remove("indeterminate");
+          ui.barFill.style.transition = "width 0.12s linear";
+          ui.barFill.style.width = "0%";
+        }
+
+        // Total progress by REAL bytes (weighted)
+        const totalFiles = files.length;
+        const totalBytes = files.reduce((sum, f) => sum + (f?.size || 0), 0) || totalFiles;
+
+        const perFileLoaded = new Map(); // key -> loaded bytes
+        const setOverallProgress = rafThrottle((loadedBytes, labelLeft, labelRight) => {
+          const percent = clamp(Math.round((loadedBytes / totalBytes) * 100), 0, 100);
+
+          if (ui.barFill) ui.barFill.style.width = `${percent}%`;
+
+          if (ui.meta) {
+            const left = ui.meta.querySelector(".upload-meta-left");
+            const right = ui.meta.querySelector(".upload-meta-right");
+            if (left) left.innerText = labelLeft || "Đang tải...";
+            if (right) right.innerText = labelRight || `${percent}%`;
+          }
+        });
+
+        const getLoadedAll = () => {
+          let sum = 0;
+          for (const v of perFileLoaded.values()) sum += v || 0;
+          return sum;
+        };
+
+        let successCount = 0;
+        const currentServerIndex = serverSelect.value || 0;
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const key = `${file.name}__${i}`;
+          perFileLoaded.set(key, 0);
+
+          // Live preview
+          setOverlayPreview(ui.preview, file);
+
+          if (ui.loadingText)
+            ui.loadingText.innerText = `ĐANG TẢI: ${file.name} (0%)`;
+
+          setOverallProgress(
+            getLoadedAll(),
+            `File ${i + 1}/${totalFiles}: ${file.name}`,
+            "0%"
+          );
+
+          try {
+            const json = await uploadFileXHR(
+              file,
+              currentServerIndex,
+              ({ loaded, total, percent, phase }) => {
+                // keep the current file bytes
+                const safeLoaded = clamp(loaded || 0, 0, total || file.size || loaded || 0);
+                perFileLoaded.set(key, safeLoaded);
+
+                const loadedAll = getLoadedAll();
+                const overallPercent = clamp(Math.round((loadedAll / totalBytes) * 100), 0, 100);
+
+                if (ui.loadingText) {
+                  if (phase === "processing") {
+                    ui.loadingText.innerText = `ĐANG XỬ LÝ: ${file.name} • Tổng: ${overallPercent}%`;
+                  } else {
+                    ui.loadingText.innerText = `ĐANG TẢI: ${file.name} (${percent || 0}%) • Tổng: ${overallPercent}%`;
+                  }
+                }
+
+                setOverallProgress(
+                  loadedAll,
+                  `File ${i + 1}/${totalFiles}: ${file.name}`,
+                  `${overallPercent}%`
+                );
+              }
+            );
+
+            if (json && json.success) {
+              successCount++;
+
+              // Make sure this file is counted as fully uploaded
+              perFileLoaded.set(key, file.size || perFileLoaded.get(key) || 0);
+
+              const currentDriveCount =
+                parseInt(document.getElementById("count-drive").innerText) || 0;
+              document.getElementById("count-drive").innerText = currentDriveCount + 1;
+
+              increaseUploadCount();
+
+              if (json.data && json.data.bytes) {
+                globalUsedBytes += json.data.bytes;
+                updateStorageVisual();
+              }
+
+              const item = processCloudData(json.data, file);
+              addToRecent(item, file);
+
+              if (ui.loadingText)
+                ui.loadingText.innerText = `HOÀN TẤT: ${file.name} (OK)`;
+
+              setOverallProgress(
+                getLoadedAll(),
+                `Đã xong ${i + 1}/${totalFiles} file`,
+                `${clamp(Math.round((getLoadedAll() / totalBytes) * 100), 0, 100)}%`
+              );
+
+              await new Promise((r) => setTimeout(r, 250));
+            } else {
+              showToast(`Lỗi: ${(json && json.message) || "Upload thất bại"}`, "error");
+            }
+          } catch (error) {
+            console.error(error);
+            showToast(`Lỗi mạng khi tải file!`, "error");
+          }
+        }
+
+        // Finalize
+        if (ui.barFill) ui.barFill.style.width = "100%";
+        if (ui.meta) ui.meta.querySelector(".upload-meta-right").innerText = "100%";
+
+        await new Promise((r) => setTimeout(r, 250));
+
+        ui.loadingBox.style.display = "none";
+        loadStats(true);
+
+        if (successCount > 0)
+          showToast(`Xong! Đã tải lên ${successCount} file.`, "success");
+      }
+
+
+
+      function uploadFileXHR(file, accountIndex, onProgress) {
+        return new Promise((resolve, reject) => {
+          const formData = new FormData();
+          formData.append("myFile", file);
+          formData.append("accountIndex", accountIndex);
+
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", `${API_URL}/upload`, true);
+
+          const total = file?.size || 0;
+
+          xhr.upload.onloadstart = () => {
+            if (typeof onProgress === "function") {
+              onProgress({ loaded: 0, total, percent: 0, phase: "uploading" });
+            }
+          };
+
+          xhr.upload.onprogress = (event) => {
+            if (!event || !event.lengthComputable) return;
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            if (typeof onProgress === "function") {
+              onProgress({
+                loaded: event.loaded,
+                total: event.total,
+                percent: percentComplete,
+                phase: "uploading",
+              });
+            }
+          };
+
+          // Upload finished, server may still be processing
+          xhr.upload.onload = () => {
+            if (typeof onProgress === "function") {
+              onProgress({
+                loaded: total,
+                total: total,
+                percent: 100,
+                phase: "processing",
+              });
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              try {
+                resolve(JSON.parse(xhr.responseText));
+              } catch (e) {
+                reject("JSON Error");
+              }
+            } else {
+              reject(`HTTP Error: ${xhr.status}`);
+            }
+          };
+
+          xhr.onerror = () => reject("Network Error");
+          xhr.send(formData);
+        });
+      }
+
+
+      function updateLoadingText(current, total) {
+        const t = loadingBox.querySelector("p");
+        if (t) t.innerText = `ĐANG XỬ LÝ... (${current}/${total})`;
+      }
+
+      dropZone.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", async (e) => {
+        await handleFiles(Array.from(e.target.files));
+        fileInput.value = "";
+      });
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = "var(--primary-color)";
+        dropZone.style.transform = "scale(1.02)";
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.style.borderColor = "";
+        dropZone.style.transform = "";
+      });
+      dropZone.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = "";
+        dropZone.style.transform = "";
+        await handleFiles(Array.from(e.dataTransfer.files));
+      });
+
+      async function emptyDriveTrash() {
+        const serverIndex =
+          document.getElementById("adminServerSelect").value || 0;
+        const serverName =
+          adminServerSelect.options[adminServerSelect.selectedIndex].text;
+
+        if (
+          !confirm(
+            `Bạn có chắc chắn muốn DỌN DẸP tài nguyên rác của ${serverName}? Hành động này sẽ xóa vĩnh viễn!`
+          )
+        ) {
+          return;
+        }
+
+        showToast("Đang dọn dẹp...", "success");
+
+        try {
+          const res = await fetch(
+            `${API_URL}/admin/empty-trash/${serverIndex}`,
+            {
+              method: "POST",
+              headers: { "x-admin-pass": currentAdminToken },
+            }
+          );
+          const data = await res.json();
+
+          if (data.success) {
+            showToast(`Đã dọn dẹp ${serverName}!`, "success");
+            loadAdminData();
+          } else {
+            showToast("Lỗi: " + data.error, "error");
+          }
+        } catch (error) {
+          showToast("Lỗi kết nối server", "error");
+        }
+      }
+
+      async function renameFile(fileId, currentName) {
+        const newName = prompt(
+          "Nhập tên mới (Public ID) cho file:",
+          currentName
+        );
+
+        if (
+          newName === null ||
+          newName.trim() === "" ||
+          newName === currentName
+        )
+          return;
+
+        const serverIndex =
+          document.getElementById("adminServerSelect").value || 0;
+
+        showToast("Đang đổi tên...", "info");
+
+        try {
+          const res = await fetch(`${API_URL}/admin/rename`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-pass": currentAdminToken,
+            },
+            body: JSON.stringify({
+              fileId: fileId,
+              newName: newName.trim(),
+              accountIndex: serverIndex,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            showToast("Đổi tên thành công!", "success");
+
+            const file = adminFilesCache.find((f) => f.public_id === fileId);
+            if (file) {
+              file.public_id = newName.trim();
+              file.filename = newName.trim();
+            }
+
+            const row = document.getElementById(`row-${fileId}`);
+            if (row) {
+              row.id = `row-${newName.trim()}`;
+
+              const nameSpan = row.querySelector(".admin-file-link");
+              if (nameSpan)
+                nameSpan.innerHTML = `<i class="fa-solid fa-eye"></i> ${newName.trim()}.${file.format || ""
+                  }`;
+
+              const btns = row.querySelectorAll("button");
+              if (btns[0])
+                btns[0].setAttribute(
+                  "onclick",
+                  `renameFile('${newName.trim()}', '${newName
+                    .trim()
+                    .replace(/'/g, "\\'")}')`
+                );
+              if (btns[1])
+                btns[1].setAttribute(
+                  "onclick",
+                  `deleteSingleFile('${newName.trim()}')`
+                );
+
+              const linkSpan = row.querySelector(".admin-file-link");
+              linkSpan.setAttribute(
+                "onclick",
+                `viewAdminFile('${newName.trim()}')`
+              );
+            }
+          } else {
+            showToast("Lỗi: " + data.message, "error");
+          }
+        } catch (e) {
+          console.error(e);
+          showToast("Lỗi kết nối Server", "error");
+        }
+      }
+
+      function updateUploadedCounterUI() {
+        const el = document.getElementById("count-uploaded");
+        if (!el) return;
+
+        fetch(`${API_URL}/metrics/uploads`)
+          .then((r) => r.json())
+          .then((json) => {
+            if (json && json.success) el.innerText = json.count ?? 0;
+          })
+          .catch(() => {
+            // fallback nhẹ nếu lỗi mạng
+            el.innerText = el.innerText || "0";
+          });
+      }
+
+      function increaseUploadCount() {
+        // Server đã tăng counter trong Mongo sau upload thành công.
+        // Client chỉ tăng UI cho "nhanh" (hoặc refresh lại từ server).
+        const el = document.getElementById("count-uploaded");
+        if (!el) return;
+
+        const current = parseInt(el.innerText || "0", 10) || 0;
+        el.innerText = current + 1;
+
+        el.style.color = "var(--success-color)";
+        setTimeout(() => (el.style.color = "var(--text-color)"), 500);
+      }
+
+      function toggleSelectAll() {
+        const masterCheckbox = document.getElementById("selectAllCheckbox");
+        const checkboxes = document.querySelectorAll(".file-checkbox");
+        checkboxes.forEach((cb) => (cb.checked = masterCheckbox.checked));
+        updateDeleteMultiBtn();
+      }
+
+      function updateDeleteMultiBtn() {
+        const checkedBoxes = document.querySelectorAll(
+          ".file-checkbox:checked"
+        );
+        const btn = document.getElementById("btnDeleteMulti");
+
+        if (checkedBoxes.length > 0) {
+          btn.style.display = "inline-flex";
+          btn.innerHTML = `<i class="fa-solid fa-trash-can"></i> Xóa (${checkedBoxes.length}) file chọn`;
+        } else {
+          btn.style.display = "none";
+        }
+      }
+
+      async function deleteSelectedFiles() {
+        const checkedBoxes = document.querySelectorAll(
+          ".file-checkbox:checked"
+        );
+        const count = checkedBoxes.length;
+        if (count === 0) return;
+
+        if (
+          !confirm(
+            `CẢNH BÁO: Bạn chắc chắn muốn xóa vĩnh viễn ${count} file đã chọn?`
+          )
+        )
+          return;
+
+        const btn = document.getElementById("btnDeleteMulti");
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang xóa...`;
+
+        const filesToDelete = Array.from(checkedBoxes).map((cb) => ({
+          id: cb.value,
+          type: cb.getAttribute("data-type"),
+        }));
+
+        const serverIndex =
+          document.getElementById("adminServerSelect").value || 0;
+
+        try {
+          const res = await fetch(`${API_URL}/admin/delete-batch`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-pass": currentAdminToken,
+            },
+            body: JSON.stringify({
+              accountIndex: serverIndex,
+              files: filesToDelete,
+            }),
+          });
+
+          const json = await res.json();
+
+          if (json.success) {
+            showToast(`Đã xóa thành công ${json.count} file!`, "success");
+
+            filesToDelete.forEach((f) => {
+              const row = document.getElementById(`row-${f.id}`);
+              if (row) row.remove();
+
+              adminFilesCache = adminFilesCache.filter(
+                (item) => item.public_id !== f.id
+              );
+            });
+
+            globalUsedBytes = calculateRealTotalBytes(adminFilesCache);
+            updateStorageVisual();
+
+            document.getElementById("selectAllCheckbox").checked = false;
+            updateDeleteMultiBtn();
+
+            adminStatusMsg.innerText = `Tổng số file: ${adminFilesCache.length}`;
+          } else {
+            showToast("Lỗi: " + json.message, "error");
+          }
+        } catch (e) {
+          showToast("Lỗi kết nối Server", "error");
+          console.error(e);
+        } finally {
+          btn.disabled = false;
+          updateDeleteMultiBtn();
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const introOverlay = document.getElementById("intro-overlay");
+
+        const popupModal = document.getElementById("intro-popup-modal");
+
+        const video = document.getElementById("intro-video");
+
+        const btnUnmute = document.getElementById("btn-unmute");
+
+        if (false && localStorage.getItem("faceAuthSuccess") === "true") {
+          localStorage.removeItem("faceAuthSuccess");
+
+          sessionStorage.setItem("hasVisited", "true");
+
+          if (video) {
+            video.pause();
+
+            video.src = "";
+
+            video.remove();
+          }
+
+          if (introOverlay) introOverlay.remove();
+
+          if (popupModal) popupModal.remove();
+
+          if (btnUnmute) btnUnmute.remove();
+
+          await loadServers();
+
+          if (serverSelect.options.length > 0) {
+            adminServerSelect.innerHTML = serverSelect.innerHTML;
+
+            adminServerSelect.value = serverSelect.value;
+          }
+
+          const HARDCODED_PASS = "__LEGACY_DISABLED__";
+
+          currentAdminToken = HARDCODED_PASS;
+          try { sessionStorage.setItem("adminToken", currentAdminToken); } catch (e) { }
+
+          runHackerTransition(() => {
+            const btnAdmin = document.querySelector(".btn-admin");
+
+            const btnKho = document.querySelector(".btn-warehouse");
+
+            const btnExport = document.querySelector(".btn-export");
+
+            if (btnAdmin) btnAdmin.style.display = "none";
+
+            if (btnKho) btnKho.style.display = "none";
+
+            if (btnExport) btnExport.style.display = "none";
+
+            switchView("admin");
+
+            showToast("IDENTITY VERIFIED: WELCOME ADMIN", "success");
+          });
+
+          return;
+        }
+
+        if (sessionStorage.getItem("hasVisited") === "true") {
+          if (introOverlay) {
+            introOverlay.style.display = "none";
+
+            introOverlay.style.opacity = "0";
+
+            introOverlay.style.visibility = "hidden";
+          }
+
+          if (popupModal) popupModal.style.display = "none";
+
+          if (video) video.pause();
+
+          return;
+        }
+
+        if (video) {
+          video.muted = true;
+
+          if (btnUnmute) {
+            btnUnmute.style.display = "flex";
+
+            btnUnmute.style.opacity = "1";
+          }
+
+          var playPromise = video.play();
+
+          if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+              console.log("Autoplay blocked:", error);
+            });
+          }
+
+          video.addEventListener("ended", () => {
+            closeIntroAndShowPopup();
+          });
+        }
+      });
+
+      function closeIntro() {
+        closeIntroAndShowPopup();
+      }
+
+      function closeIntroAndShowPopup() {
+        const introOverlay = document.getElementById("intro-overlay");
+        const popupModal = document.getElementById("intro-popup-modal");
+        const video = document.getElementById("intro-video");
+
+        introOverlay.classList.add("fade-out");
+
+        setTimeout(() => {
+          introOverlay.style.display = "none";
+          if (video) video.pause();
+
+          popupModal.style.display = "flex";
+
+          setTimeout(() => {
+            popupModal.classList.add("active");
+          }, 50);
+        }, 800);
+      }
+
+      function enterWebsite() {
+        const popupModal = document.getElementById("intro-popup-modal");
+
+        sessionStorage.setItem("hasVisited", "true");
+
+        popupModal.classList.add("popup-closing");
+
+        setTimeout(() => {
+          popupModal.style.display = "none";
+          popupModal.classList.remove("active", "popup-closing");
+        }, 400);
+      }
+
+      function updateStorageVisual() {
+        const elUsed = document.getElementById("storage-used");
+        const elTotal = document.getElementById("storage-total");
+        const elBar = document.getElementById("storage-bar");
+        const elLive = document.getElementById("live-storage-used");
+
+        if (typeof globalUsedBytes !== "number") globalUsedBytes = 0;
+        if (typeof globalTotalBytes !== "number" || globalTotalBytes === 0)
+          globalTotalBytes = 25 * 1024 * 1024 * 1024;
+
+        let percent = (globalUsedBytes / globalTotalBytes) * 100;
+        if (percent < 0) percent = 0;
+        if (percent > 100) percent = 100;
+
+        const usedGB = (globalUsedBytes / (1024 * 1024 * 1024)).toFixed(2);
+        const totalGB = (globalTotalBytes / (1024 * 1024 * 1024)).toFixed(2);
+
+        const liveUsedGB = (globalUsedBytes / (1024 * 1024 * 1024)).toFixed(5);
+
+        if (elUsed) elUsed.innerText = usedGB + " GB";
+        if (elTotal) elTotal.innerText = totalGB + " GB";
+        if (elBar) elBar.style.width = percent + "%";
+
+        if (elLive) {
+          elLive.innerText = `${liveUsedGB} GB`;
+          elLive.style.color = "#d63031";
+          setTimeout(() => (elLive.style.color = "var(--primary-color)"), 300);
+        }
+
+        if (elBar) {
+          if (percent > 90) elBar.style.background = "#ff7675";
+          else
+            elBar.style.background = "linear-gradient(90deg, #0984e3, #74b9ff)";
+        }
+      }
+
+      function calculateRealTotalBytes(filesArray) {
+        if (!filesArray || !Array.isArray(filesArray)) return 0;
+
+        let total = 0;
+        filesArray.forEach((file) => {
+          if (file.bytes) total += parseInt(file.bytes);
+        });
+        return total;
+      }
+
+      function enableSound(e) {
+        e.stopPropagation();
+        const video = document.getElementById("intro-video");
+        video.muted = false;
+        video.play();
+
+        const btn = document.getElementById("btn-unmute");
+        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Đã bật';
+        btn.style.opacity = "0";
+        setTimeout(() => (btn.style.display = "none"), 500);
+      }
+
+      function runHackerTransition(onScreenBlackCallback, customText) {
+        const layer = document.getElementById("hacker-transition-layer");
+        const appContainer = document.querySelector(".container");
+        const textElement = layer.querySelector(".transition-text");
+
+        if (customText) {
+          textElement.innerHTML = customText;
+        } else {
+          textElement.innerHTML = "CHÀO MỪNG ADMIN<br>LOADING ADMIN_KERNEL...";
+        }
+
+        layer.style.display = "flex";
+        if (appContainer) appContainer.classList.add("crt-shutdown");
+
+        setTimeout(() => {
+          if (onScreenBlackCallback) onScreenBlackCallback();
+
+          if (appContainer) {
+            appContainer.classList.remove("crt-shutdown");
+            appContainer.classList.add("crt-boot-up");
+          }
+
+          setTimeout(() => {
+            layer.style.display = "none";
+            if (appContainer) appContainer.classList.remove("crt-boot-up");
+          }, 800);
+        }, 1500);
+      }
+
+
+      function goToAccessManager() {
+        // lưu token để trang quản lý truy cập dùng lại
+        try {
+        } catch (e) { }
+        window.location.href = "access.html";
+      }
+
+      function goToFaceID() {
+        window.location.href = "faceid.html";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        if (false && localStorage.getItem("faceAuthSuccess") === "true") {
+          localStorage.removeItem("faceAuthSuccess");
+
+          const HARDCODED_PASS = "__LEGACY_DISABLED__";
+          currentAdminToken = HARDCODED_PASS;
+          try { sessionStorage.setItem("adminToken", currentAdminToken); } catch (e) { }
+
+          runHackerTransition(() => {
+            document.querySelector(".btn-admin").style.display = "none";
+            document.querySelector(".btn-warehouse").style.display = "none";
+            document.querySelector(".btn-export").style.display = "none";
+
+            switchView("admin");
+
+            showToast("Chào mừng Đế Vương quay trở lại !", "success");
+          });
+        }
+      });
+
+      // Giả sử biến đếm của bạn tên là:
+      let countUploaded = 0;
+
+      // 1. HÀM TỰ ĐỘNG LẤY DỮ LIỆU KHI MỞ WEB
+      async function loadCountFromServer() {
+        try {
+          const response = await fetch(`${SERVER_URL}/get-count`);
+          const data = await response.json();
+
+          // Cập nhật biến đếm
+          countUploaded = data.count || 0;
+
+          // Cập nhật giao diện (Ví dụ bạn có thẻ span id="count-display")
+          // document.getElementById('count-display').innerText = countUploaded;
+
+          console.log("Đã load lại số lượng upload:", countUploaded);
+        } catch (error) {
+          console.error("Không thể lấy dữ liệu từ server:", error);
+        }
+      }
+
+      // 2. HÀM TỰ ĐỘNG LƯU KHI TẮT WEB (Dùng sendBeacon)
+      function saveCountOnExit() {
+        // Tạo dữ liệu JSON
+        const data = JSON.stringify({ count: countUploaded });
+
+        // Tạo Blob để sendBeacon hiểu là JSON
+        const blob = new Blob([data], { type: "application/json" });
+
+        // navigator.sendBeacon gửi ngầm, không chặn việc đóng tab
+        const success = navigator.sendBeacon(`${SERVER_URL}/save-count`, blob);
+
+        // Debug (thường sẽ không kịp nhìn thấy log này khi đóng tab)
+        // console.log("Beacon sent:", success);
+      }
+
+      // --- KÍCH HOẠT ---
+
+      // Khi web vừa load xong -> Gọi hàm lấy dữ liệu
+      window.addEventListener("DOMContentLoaded", loadCountFromServer);
+
+      // Khi người dùng tắt tab, reload, hoặc tắt trình duyệt -> Gọi hàm lưu
+      // 'visibilitychange' đáng tin cậy hơn trên mobile, 'beforeunload' tốt trên desktop
+      window.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+          saveCountOnExit();
+        }
+      });
+
+      // Thêm cái này để chắc chắn hơn trên PC cũ
+      window.addEventListener("beforeunload", saveCountOnExit);
+    </script>
+
+  </div>
+  <script>
+    (function () {
+      const btn = document.getElementById("mascot-toggle-btn");
+      const icon = document.getElementById("mascot-icon");
+      if (!btn || !icon) return;
+
+      let running = false;
+      let rafId = null;
+      let ong = null, buom = null;
+      let onResize = null;
+      let onMouseUp = null;
+
+      const TEAM_MEMBERS = ["Minh Phạm", "Huy Nguyễn", "Linh Trần"];
+      const TEAM_LINE = `Thành viên: ${TEAM_MEMBERS.join(" • ")}`;
+
+      const MOOD_LINES = {
+        HAPPY: [
+          "Upload ổn áp! File lên kho rồi nè.",
+          "Preview ok, thêm vào Danh sách vừa thêm thôi!",
+          "Đã sync kho lưu trữ, tìm kiếm sẽ dễ hơn.",
+          "Nhớ đặt tên file gọn gàng cho dễ quản lý nha!",
+          TEAM_LINE,
+        ],
+        ANGRY: [
+          "Khoan khoan, mình đang xử lý upload!",
+          "Đừng bấm liên tục, để mình xử lý xong đã nha!",
+          "Chờ tí, đang đợi server phản hồi...",
+          "Đang validate file/size, đừng làm nhiễu nha!",
+          "Đợi mình render preview xong đã!",
+        ],
+        HUNGRY: [
+          "Thiếu link preview rồi, server trả thiếu dữ liệu!",
+          "Cho mình thêm thông tin: type/size/public_id nha!",
+          "Cần response đầy đủ (secure_url/public_id) để render!",
+          "Thiếu quyền rename? Phải gọi Admin API đó!",
+          "Cho mình xem log /upload hoặc /files với!",
+        ],
+        CRAZY: [
+          "Kéo thả thêm file đi, mình render ngay!",
+          "Upload xong là show liền dưới Danh sách vừa thêm!",
+          "Quẩy một loạt ảnh cũng được, mình cân!",
+          "Xong rồi thì nhấn reset là list bay hết nhé!",
+          "Bật dark mode lên nhìn chất hơn đó!",
+        ],
+        NIGHT: [
+          "Khuya rồi, upload nhẹ thôi nha!",
+          "Nhớ backup link Cloudinary kẻo mai tìm lại mệt đó.",
+          "Chốt xong thì reset cho gọn UI nhé!",
+          "Mai tiếp tục cũng được, đừng overwork nha!",
+          "Chúc bạn ngủ ngon, mai deploy mượt!",
+        ],
+        SCAN: [
+          "Đã kiểm tra định dạng: jpg/png/gif/webp?",
+          "Dung lượng file ổn chưa? Nếu quá lớn thì nén nhé!",
+          "Public_id hợp lệ chưa? Tránh ký tự lạ nha!",
+          "Đổi tên trên Cloudinary phải qua backend Admin API nhé!",
+          "Nhớ kiểm tra CORS/mixed content nếu không load được ảnh!",
+        ],
+      };
+
+      const RAW_LINES = {
+        captured_ong: [
+          "Khoan! Mình đang upload, đợi response đã!",
+          "Hold on, đang đẩy file lên Cloudinary...",
+          "Chờ tí, đang tạo preview cho Danh sách vừa thêm.",
+          "Đừng kéo, mình đang xử lý progress bar.",
+          "Đợi mình nhận secure_url/public_id đã!",
+        ],
+        captured_buom: [
+          "Cứu! UI chưa render ảnh mới rồi!",
+          "Ảnh lên rồi mà list chưa hiện, check response giúp với!",
+          "Có thể thiếu secure_url, cho mình fallback preview nha!",
+          "Server trả data rỗng? Gọi /files lấy file mới nhất thôi!",
+          "CORS chặn rồi… mở Console xem lỗi nha!",
+        ],
+        mock_buom: [
+          "Nhắc nhẹ: đặt tên file cho dễ tìm nha!",
+          "Upload xong nhớ kiểm tra ở Kho lưu trữ nhé!",
+          "Đừng quên: reset thì Danh sách vừa thêm sẽ mất đó!",
+          "Nếu cần đổi tên trên Cloudinary: phải gọi endpoint rename!",
+          `Team mình gồm: ${TEAM_MEMBERS.join(", ")}.`,
+        ],
+        hero: [
+          "Team ơi, mình kiểm tra /upload response đây!",
+          "Để mình kéo dữ liệu từ /files về render lại!",
+          "Mình xử lý fallback preview bằng ObjectURL nhé!",
+          "Ai đang giữ backend? Cho mình xem đoạn upload/rename!",
+          `Ping ${TEAM_MEMBERS[0]} / ${TEAM_MEMBERS[1]} / ${TEAM_MEMBERS[2]} nha!`,
+        ],
+        victory: [
+          "Ok rồi! Ảnh đã hiện ở Danh sách vừa thêm!",
+          "Render xong! Preview lên ngay bên dưới rồi nè!",
+          "Sync ổn! Kho lưu trữ cập nhật đầy đủ!",
+          "Done! Tiếp tục upload file khác nhé!",
+        ],
+        thanks: [
+          "Cảm ơn nhiều nha!",
+          "Chuẩn rồi, ngon quá!",
+          "Đúng ý mình luôn, cảm ơn team!",
+        ],
+        interaction: [
+          `Chào team! ${TEAM_LINE}`,
+          "Tip: Danh sách vừa thêm là tạm thời, reset là mất nhé!",
+          "Đổi tên trên Cloudinary: cần backend gọi uploader.rename().",
+          "Nếu upload xong không hiện: check Network /upload và response data.",
+          "Muốn chắc ăn: server nên trả {secure_url, public_id, resource_type}.",
+        ],
+      };
+
+      const LineManager = {
+        used: new Set(),
+        get(category) {
+          const pool = MOOD_LINES[category] || RAW_LINES[category] || ["..."];
+          let available = pool.filter(l => !this.used.has(l));
+          if (available.length === 0) {
+            this.used.clear();
+            available = pool;
+          }
+          const picked = available[Math.floor(Math.random() * available.length)];
+          this.used.add(picked);
+          return picked;
+        }
+      };
+
+      let lastRescueTime = 0;
+      let lastProjectileTime = 0;
+      const RESCUE_PROBABILITY = 0.5;
+
+      function launchProjectile(fromX, fromY, toX, toY) {
+        if (Date.now() - lastProjectileTime < 1000) return;
+        lastProjectileTime = Date.now();
+
+        const p = document.createElement("div");
+        p.innerText = Math.random() > 0.5 ? "📝" : "🐛";
+        p.style.cssText = `position:fixed; z-index:20005; left:${fromX}px; top:${fromY}px; font-size:32px; transition: all 0.5s ease-in; pointer-events:none;`;
+        document.body.appendChild(p);
+
+        setTimeout(() => {
+          p.style.left = toX + "px";
+          p.style.top = toY + "px";
+          p.style.transform = "rotate(360deg) scale(1.4)";
+        }, 20);
+
+        setTimeout(() => {
+          document.body.style.filter = "brightness(1.05)";
+          setTimeout(() => {
+            document.body.style.filter = "none";
+            p.remove();
+          }, 100);
+        }, 500);
+      }
+
+      function createSpeechBox(color = "#000") {
+        const box = document.createElement("div");
+        Object.assign(box.style, {
+          backgroundColor: "rgba(255, 255, 255, 0.98)",
+          border: "2px solid #000",
+          borderRadius: "8px",
+          padding: "4px 8px",
+          fontSize: "13px",
+          fontWeight: "900",
+          marginBottom: "-75px",
+          opacity: "0",
+          transition: "all 0.2s",
+          boxShadow: "2px 2px 0px #000",
+          fontFamily: "monospace",
+          zIndex: "20002",
+          color,
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+        });
+        return box;
+      }
+
+      class Character {
+        constructor(id, imgSrc, size, baseSpeed) {
+          this.id = id;
+          this.size = size;
+          this.baseSpeed = baseSpeed;
+
+          this.container = document.createElement("div");
+          Object.assign(this.container.style, {
+            position: "fixed",
+            zIndex: "20001",
+            pointerEvents: "auto",
+            left: "50px",
+            top: "50px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            cursor: "grab",
+          });
+
+          this.speechBox = createSpeechBox(id === "ong" ? "#2d3436" : "#6c5ce7");
+          this.container.appendChild(this.speechBox);
+
+          this.img = document.createElement("img");
+          this.img.src = imgSrc;
+          this.img.style.width = `${size}px`;
+          this.img.style.userSelect = "none";
+          this.img.draggable = false;
+
+          this.container.appendChild(this.img);
+          document.body.appendChild(this.container);
+
+          this.x = Math.random() * window.innerWidth;
+          this.y = Math.random() * window.innerHeight;
+          this.angle = Math.random() * Math.PI * 2;
+          this.currentSpeed = baseSpeed;
+
+          this.isCaptured = false;
+          this.isEvolved = false;
+
+          this.mood = "HAPPY";
+          this.moodTimer = 0;
+
+          this._onMouseDown = (e) => {
+            e.preventDefault();
+            this.isCaptured = true;
+            this.img.style.filter = "grayscale(0.2) saturate(1.4) contrast(1.1)";
+            this.say(LineManager.get(this.id === "ong" ? "captured_ong" : "captured_buom"));
+          };
+
+          this.container.addEventListener("mousedown", this._onMouseDown);
+        }
+
+        destroy() {
+          try { this.container.removeEventListener("mousedown", this._onMouseDown); } catch (e) { }
+          try { this.container.remove(); } catch (e) { }
+        }
+
+        forceRelease() {
+          if (this.isCaptured) {
+            this.isCaptured = false;
+            this.img.style.filter = this.isEvolved ? this.img.style.filter : "none";
+            this.currentSpeed = this.baseSpeed;
+            document.body.style.backgroundColor = "";
+            this.mood = "ANGRY";
+            this.moodTimer = 200;
+          }
+        }
+
+        say(msg, time = 2500) {
+          this.speechBox.innerText = msg;
+          this.speechBox.style.opacity = "1";
+          setTimeout(() => (this.speechBox.style.opacity = "0"), time);
+        }
+
+        update(partner) {
+          const now = Date.now();
+
+          if (this.isCaptured) {
+            document.body.style.backgroundColor = "rgba(0,0,0,0.10)";
+            const shake = (Math.random() - 0.5) * 12;
+            this.container.style.transform = `translate(${this.x + shake}px, ${this.y + shake}px) scale(0.9)`;
+            return;
+          }
+
+          this.moodTimer--;
+          if (this.moodTimer <= 0) {
+            const hour = new Date().getHours();
+            if (hour >= 22 || hour <= 5) this.mood = "NIGHT";
+            else if (window.location.href.includes("face")) this.mood = "SCAN";
+            else {
+              const moods = ["HAPPY", "HAPPY", "HUNGRY", "CRAZY"];
+              this.mood = moods[Math.floor(Math.random() * moods.length)];
+            }
+            this.moodTimer = 400 + Math.random() * 400;
+            if (Math.random() < 0.2) this.say(LineManager.get(this.mood));
+          }
+
+          let multiplier = 1;
+          if (this.mood === "CRAZY") multiplier = 2.2;
+          if (this.mood === "HUNGRY") multiplier = 0.7;
+          if (this.mood === "ANGRY") multiplier = 1.6;
+
+          if (partner.isCaptured) {
+            const dx = partner.x + partner.size / 2 - (this.x + this.size / 2);
+            const dy = partner.y + partner.size / 2 - (this.y + this.size / 2);
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (this.id === "ong") {
+              this.angle = Math.atan2(dy, dx);
+              this.currentSpeed = 11;
+
+              if (dist < 350) {
+                launchProjectile(
+                  this.x + this.size * 0.5,
+                  this.y + this.size * 0.35,
+                  partner.x + partner.size * 0.5,
+                  partner.y + partner.size * 0.5
+                );
+              }
+
+              if (dist < 130 && now - lastRescueTime > 1200) {
+                lastRescueTime = now;
+                if (Math.random() < RESCUE_PROBABILITY) {
+                  partner.forceRelease();
+                  this.say(LineManager.get("victory"));
+                  partner.say(LineManager.get("thanks"));
+                  this.angle += Math.PI;
+                  this.currentSpeed = 18;
+                } else {
+                  this.say(LineManager.get("hero"));
+                }
+              }
+            } else {
+              this.angle += 0.18;
+              this.x = partner.x + Math.cos(this.angle) * 180;
+              this.y = partner.y + Math.sin(this.angle) * 180;
+
+              if (Math.random() < 0.01) this.say(LineManager.get("mock_buom"));
+              this.container.style.transform = `translate(${this.x}px, ${this.y}px)`;
+              return;
+            }
+          } else {
+            this.angle += (Math.random() - 0.5) * 0.25;
+            this.currentSpeed = (this.isEvolved ? this.baseSpeed * 2.0 : this.baseSpeed) * multiplier;
+          }
+
+          this.x += Math.cos(this.angle) * this.currentSpeed;
+          this.y += Math.sin(this.angle) * this.currentSpeed;
+
+          const pad = 30;
+          if (this.x < -pad) { this.x = -pad; this.angle = 0; }
+          if (this.x > window.innerWidth - this.size + pad) { this.x = window.innerWidth - this.size + pad; this.angle = Math.PI; }
+          if (this.y < -pad) { this.y = -pad; this.angle = Math.PI / 2; }
+          if (this.y > window.innerHeight - this.size + pad) { this.y = window.innerHeight - this.size + pad; this.angle = -Math.PI / 2; }
+
+          this.img.style.transform = Math.cos(this.angle) < 0 ? "scaleX(1)" : "scaleX(-1)";
+          this.container.style.transform = `translate(${this.x}px, ${this.y}px)`;
+        }
+      }
+
+      function startMascots() {
+        if (running) return;
+        running = true;
+
+        const BASE_SPEED_ONG = 1.3, BASE_SPEED_BUOM = 1.3;
+        const ONG_SIZE = 120, BUOM_SIZE = 80;
+
+        ong = new Character(
+          "ong",
+          "https://cdn.pixabay.com/animation/2024/04/25/19/52/19-52-51-662_512.gif",
+          ONG_SIZE,
+          BASE_SPEED_ONG
+        );
+        buom = new Character(
+          "buom",
+          "https://cdn.pixabay.com/animation/2025/10/17/17/13/17-13-24-511_512.gif",
+          BUOM_SIZE,
+          BASE_SPEED_BUOM
+        );
+
+        onMouseUp = () => {
+          if (!running) return;
+          try { ong && ong.forceRelease(); } catch (e) { }
+          try { buom && buom.forceRelease(); } catch (e) { }
+        };
+        window.addEventListener("mouseup", onMouseUp);
+
+        onResize = () => {
+          if (!running) return;
+          try { if (ong) ong.x = Math.min(ong.x, window.innerWidth - 100); } catch (e) { }
+          try { if (buom) buom.x = Math.min(buom.x, window.innerWidth - 100); } catch (e) { }
+        };
+        window.addEventListener("resize", onResize);
+
+        let togetherTime = 0;
+
+        function loop() {
+          if (!running) return;
+
+          ong.update(buom);
+          buom.update(ong);
+
+          const dist = Math.sqrt(Math.pow((buom.x - ong.x), 2) + Math.pow((buom.y - ong.y), 2));
+
+          if (dist < 150 && !ong.isCaptured && !buom.isCaptured) {
+            togetherTime++;
+            if (togetherTime > 300) {
+              ong.isEvolved = true;
+              buom.isEvolved = true;
+              ong.img.style.filter = "drop-shadow(0 0 14px #fdcb6e)";
+              buom.img.style.filter = "drop-shadow(0 0 14px #a29bfe)";
+            }
+            if (Math.random() < 0.005) {
+              const act = Math.random();
+              if (act < 0.5) {
+                buom.img.style.opacity = "0";
+                setTimeout(() => { if (running && buom) buom.img.style.opacity = "1"; }, 2000);
+                buom.say("Mình kiểm tra preview ảnh mới trong Danh sách vừa thêm nhé!");
+              } else {
+                ong.say("Chốt nhanh: ai phụ trách backend /upload và rename Cloudinary?");
+                buom.angle += Math.PI;
+              }
+            }
+          } else {
+            togetherTime = 0;
+            ong.isEvolved = false;
+            buom.isEvolved = false;
+          }
+
+          rafId = requestAnimationFrame(loop);
+        }
+        rafId = requestAnimationFrame(loop);
+
+        setTimeout(() => {
+          if (!running) return;
+          ong.say(`Hello team! ${TEAM_LINE} — upload xong là mình render ngay nha!`);
+          buom.say("Okie! Mình canh phần preview + Kho lưu trữ, có lỗi thì báo Console nhé!");
+        }, 400);
+      }
+
+      function stopMascots() {
+        running = false;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        if (onResize) { window.removeEventListener("resize", onResize); onResize = null; }
+        if (onMouseUp) { window.removeEventListener("mouseup", onMouseUp); onMouseUp = null; }
+        try { document.body.style.backgroundColor = ""; } catch (e) { }
+        try { if (ong) ong.destroy(); } catch (e) { }
+        try { if (buom) buom.destroy(); } catch (e) { }
+        ong = null; buom = null;
+      }
+
+      function renderBtn() {
+        if (running) {
+          icon.className = "fa-solid fa-bug";
+          btn.title = "Ong/Bướm: đang bật (bấm để tắt)";
+        } else {
+          icon.className = "fa-solid fa-bug-slash";
+          btn.title = "Ong/Bướm: đang tắt (bấm để bật)";
+        }
+      }
+
+      // default OFF
+      stopMascots();
+      renderBtn();
+
+      btn.addEventListener("click", () => {
+        if (running) stopMascots();
+        else startMascots();
+        renderBtn();
+      });
+    })();
+
+    // ===== Security hardening patch (preserve legacy UI/features) =====
+    try {
+      localStorage.removeItem("faceAuthSuccess");
+      localStorage.removeItem("realAdminPass");
+      localStorage.removeItem("adminToken");
+      sessionStorage.removeItem("adminToken");
+    } catch (_) { }
+
+    function getSafeNextUrl() {
+      try {
+        const raw = new URLSearchParams(window.location.search).get("next");
+        if (!raw) return "";
+        const target = new URL(raw, window.location.origin);
+        if (target.origin !== window.location.origin) return "";
+        return target.pathname + target.search + target.hash;
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function shouldReturnToAdminView() {
+      const params = new URLSearchParams(window.location.search);
+      const mode = String(params.get("return") || "").toLowerCase();
+      const view = String(params.get("view") || "").toLowerCase();
+      return mode === "admin" || view === "admin";
+    }
+
+    function applyAdminUiState(isAdmin) {
+      const btnAdmin = document.querySelector(".btn-admin");
+      const btnKho = document.querySelector(".btn-warehouse");
+      const btnExport = document.querySelector(".btn-export");
+
+      if (btnAdmin) {
+        btnAdmin.style.display = "flex";
+        btnAdmin.classList.toggle("admin-authenticated", !!isAdmin);
+        btnAdmin.title = isAdmin ? "Mở bảng Admin" : "Admin Mode";
+        btnAdmin.setAttribute(
+          "aria-label",
+          isAdmin ? "Mở bảng Admin" : "Mở đăng nhập Admin"
+        );
+
+        const img = btnAdmin.querySelector("img");
+        if (img) {
+          img.style.filter = isAdmin
+            ? "drop-shadow(0 0 10px rgba(0,255,65,.65))"
+            : "";
+        }
+      }
+
+      if (btnKho) btnKho.style.display = isAdmin ? "none" : "flex";
+      if (btnExport) btnExport.style.display = isAdmin ? "none" : "flex";
+    }
+
+    async function fetchAdminSessionState() {
+      try {
+        const res = await fetch(`${API_URL}/admin/session`, {
+          method: "GET",
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+        return await res.json();
+      } catch (_) {
+        return { authenticated: false };
+      }
+    }
+
+    async function openAdminViaSession(options = {}) {
+      const session = await fetchAdminSessionState();
+      if (!session || !session.authenticated) {
+        currentAdminToken = "";
+        applyAdminUiState(false);
+        return false;
+      }
+
+      currentAdminToken = "SESSION_AUTH";
+      applyAdminUiState(true);
+
+      if (serverSelect.options.length > 0) {
+        adminServerSelect.innerHTML = serverSelect.innerHTML;
+        adminServerSelect.value = serverSelect.value;
+      }
+
+      if (options.switchView === true) {
+        runHackerTransition(() => {
+          switchView("admin");
+          if (options.showToast) {
+            showToast(options.showToast, "success");
+          }
+        });
+      }
+
+      return true;
+    }
+
+    async function openAdminModal() {
+      const already = await openAdminViaSession();
+      if (already) {
+        switchView("admin");
+        return;
+      }
+
+      const modal = document.getElementById("adminPassModal");
+      modal.style.display = "flex";
+
+      modal.classList.remove("access-denied", "access-granted");
+      document
+        .querySelector(".glitch-text")
+        .setAttribute("data-text", "SYSTEM_ADMIN");
+      document.querySelector(".glitch-text").innerText = "SYSTEM_ADMIN";
+
+      document.getElementById("adminPassInput").value = "";
+      document.getElementById("adminPassInput").focus();
+
+      startMatrixRain();
+      typeWriterLog();
+    }
+
+    async function verifyAdmin() {
+      const passInput = document.getElementById("adminPassInput");
+      const pass = passInput.value;
+      const modal = document.getElementById("adminPassModal");
+      const logBox = document.getElementById("hackerLog");
+      const loginBtn = document.querySelector("#adminPassModal .cyber-btn");
+
+      const originalBtnText =
+        '<span class="btn-content">INJECT_CODE</span><span class="btn-glitch"></span>';
+
+      const inputZone =
+        passInput.closest(".input-zone") ||
+        document.querySelector(".input-zone");
+
+      const triggerShake = () => {
+        if (inputZone) {
+          inputZone.classList.remove("input-error");
+          void inputZone.offsetWidth;
+          inputZone.classList.add("input-error");
+          passInput.focus();
+          setTimeout(() => {
+            inputZone.classList.remove("input-error");
+          }, 500);
+        }
+      };
+
+      const printLog = (text, color = "#00ff41") => {
+        const p = document.createElement("p");
+        p.innerText = `> ${text}`;
+        p.style.color = color;
+        p.style.textShadow = `0 0 5px ${color}`;
+        p.style.whiteSpace = "nowrap";
+        p.style.overflow = "hidden";
+        logBox.appendChild(p);
+        logBox.scrollTop = logBox.scrollHeight;
+      };
+
+      if (!pass) {
+        printLog("ERROR: NULL_INPUT_EXCEPTION", "#ff3333");
+        triggerShake();
+        return;
+      }
+
+      loginBtn.innerHTML = '<span class="btn-content">DECRYPTING...</span>';
+      loginBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_URL}/admin/login`, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: pass }),
+        });
+        const json = await res.json().catch(() => ({}));
+
+        if (res.ok && json.success) {
+          modal.classList.add("access-granted");
+          document.querySelector(".glitch-text").innerText = "ACCESS_GRANTED";
+          printLog("SESSION CREATED. ACCESS ACCEPTED.", "#00ffff");
+
+          currentAdminToken = "SESSION_AUTH";
+          applyAdminUiState(true);
+
+          setTimeout(() => {
+            closeAdminModal();
+            const nextUrl = getSafeNextUrl();
+
+            if (nextUrl && !/index\.html/i.test(nextUrl)) {
+              window.location.href = nextUrl;
+              return;
+            }
+
+            runHackerTransition(() => {
+              loginBtn.disabled = false;
+              loginBtn.innerHTML = originalBtnText;
+
+              if (serverSelect.options.length > 0) {
+                adminServerSelect.innerHTML = serverSelect.innerHTML;
+                adminServerSelect.value = serverSelect.value;
+              }
+
+              switchView("admin");
+            });
+          }, 900);
+        } else {
+          modal.classList.add("access-denied");
+          printLog(
+            json?.message || "ACCESS DENIED: WRONG KEY.",
+            "#ff3333"
+          );
+          triggerShake();
+
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = '<span class="btn-content">RETRY</span>';
+          passInput.value = "";
+
+          setTimeout(() => {
+            modal.classList.remove("access-denied");
+          }, 500);
+        }
+      } catch (e) {
+        modal.classList.add("access-denied");
+        printLog("SERVER ERROR. TRY AGAIN.", "#ff3333");
+        triggerShake();
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<span class="btn-content">RETRY</span>';
+      }
+    }
+
+    function exitAdmin() {
+      const goodbyeMsg =
+        "SEE YOU AGAIN !<br><span style='font-size:18px; opacity:0.8'>SYSTEM DISCONNECTED...</span>";
+
+      fetch(`${API_URL}/admin/logout`, {
+        method: "POST",
+        credentials: "same-origin",
+      }).catch(() => { });
+
+      runHackerTransition(() => {
+        currentAdminToken = "";
+        applyAdminUiState(false);
+
+        const loginBtn = document.querySelector("#adminPassModal .cyber-btn");
+        if (loginBtn) {
+          loginBtn.disabled = false;
+          loginBtn.innerHTML =
+            '<span class="btn-content">INJECT_CODE</span><span class="btn-glitch"></span>';
+        }
+
+        switchView("upload");
+        showToast("DISCONNECTED.", "success");
+      }, goodbyeMsg);
+    }
+
+    async function autoCheckAdmin() {
+      const session = await fetchAdminSessionState();
+      if (session && session.authenticated) {
+        currentAdminToken = "SESSION_AUTH";
+        applyAdminUiState(true);
+        return true;
+      }
+
+      currentAdminToken = "";
+      applyAdminUiState(false);
+      return false;
+    }
+
+    function goToAccessManager() {
+      window.location.href = "access.html?return=admin";
+    }
+
+    function goToFaceID() {
+      window.location.href = "faceid.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const isAdmin = await autoCheckAdmin();
+      const params = new URLSearchParams(window.location.search);
+      const fromFace =
+        params.get("fromFace") === "1" || params.get("from") === "face";
+      const nextUrl = getSafeNextUrl();
+      const returnToAdmin = shouldReturnToAdminView();
+
+      if ((fromFace || returnToAdmin) && isAdmin) {
+        params.delete("fromFace");
+        params.delete("from");
+        params.delete("return");
+        params.delete("view");
+        const cleanSearch = params.toString();
+        const newUrl =
+          window.location.pathname + (cleanSearch ? `?${cleanSearch}` : "");
+        history.replaceState({}, "", newUrl);
+
+        await openAdminViaSession({
+          switchView: true,
+          showToast: fromFace
+            ? "Chào mừng Admin quay trở lại!"
+            : "Đã quay lại bảng Admin.",
+        });
+        return;
+      }
+
+      if (returnToAdmin && !isAdmin) {
+        params.delete("return");
+        params.delete("view");
+        const cleanSearch = params.toString();
+        const newUrl =
+          window.location.pathname + (cleanSearch ? `?${cleanSearch}` : "");
+        history.replaceState({}, "", newUrl);
+        showToast("Vui lòng đăng nhập Admin để tiếp tục.", "warning");
+        openAdminModal();
+        return;
+      }
+
+      if (nextUrl && isAdmin && !/index\.html/i.test(nextUrl)) {
+        window.location.href = nextUrl;
+      }
+    });
+
+  </script>
+</body>
+
+</html>

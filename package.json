@@ -1,0 +1,29 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "[![Gemini AI](https://img.shields.io/badge/AI-Gemini%20Pro-blueviolet?style=for-the-badge&logo=google-gemini)](https://deepmind.google/technetwork/gemini/)\r [![FaceID](https://img.shields.io/badge/Biometric-FaceID-green?style=for-the-badge&logo=biometric)](https://github.com/justadudewhohacks/face-api.js)\r [![Status](https://img.shields.io/badge/Status-Operational-brightgreen?style=for-the-badge)](https://github.com/)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "hash:admin": "node scripts/hash-admin-password.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "cloudinary": "^2.9.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dns": "^0.2.2",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "fs": "^0.0.1-security",
+    "mongoose": "^9.3.0",
+    "multer": "^2.1.1",
+    "net": "^1.0.2",
+    "path": "^0.12.7",
+    "streamifier": "^0.1.1"
+  }
+}

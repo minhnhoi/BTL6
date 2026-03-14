@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SECURE TERMINAL</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="faceid.css" />
+</head>
+
+<body>
+  <canvas id="matrix-bg"></canvas>
+  <div class="crt-overlay"></div>
+
+  <div id="scan-status-overlay"></div>
+
+  <div class="terminal-container" id="main-terminal">
+    <div class="hud-header">
+      <span class="hud-text">SYS.ROOT // ADMIN_PANEL</span>
+      <span class="hud-text" id="clock">00:00:00</span>
+      <span class="hud-text blink-text">SECURE: <span style="color: red">HIGH</span></span>
+    </div>
+
+    <div class="main-interface">
+      <div class="status-box glitched-element">
+        <i id="lock-icon" class="fa-solid fa-lock"></i>
+        <h1 id="status-text" data-value="LOCKED">SYSTEM LOCKED</h1>
+      </div>
+
+      <div class="scanner-wrapper">
+        <div class="scanner-hud">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
+          <div class="corner top-left"></div>
+          <div class="corner top-right"></div>
+          <div class="corner bottom-left"></div>
+          <div class="corner bottom-right"></div>
+        </div>
+
+        <div class="video-mask">
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="overlay"></canvas>
+          <div id="guide-text" class="guide-overlay"></div>
+          <div class="laser-scan"></div>
+        </div>
+      </div>
+
+      <div class="console-log">
+        <p id="message">> SYSTEM READY_</p>
+        <div class="progress-bar">
+          <div id="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button onclick="window.location.href='index.html'" class="cyber-btn" style="border-color: #fff; color: #fff">
+          <span class="btn-content"><i class="fa-solid fa-arrow-left"></i> TRỞ VỀ</span>
+        </button>
+
+        <button id="btn-enroll" onclick="startEnrollment()" class="cyber-btn">
+          <span class="btn-content">THIẾT LẬP FACE ID</span>
+        </button>
+
+        <button id="btn-delete" onclick="triggerResetSequence()" class="cyber-btn btn-danger">
+          <span class="btn-content">XÓA DỮ LIỆU GỐC</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="side-stats">
+      <div>CPU: <span id="cpu-stat">12%</span></div>
+      <div>MEM: <span id="mem-stat">4096MB</span></div>
+      <div>NET: <span class="blink-text">CONNECTED</span></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <script src="faceid.js"></script>
+</body>
+
+</html>

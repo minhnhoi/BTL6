@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ADMIN • Quản lý truy cập</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="access.css" />
+</head>
+
+<body>
+    <div class="topbar">
+        <div class="brand">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>ACCESS MANAGER</span>
+        </div>
+        <div class="actions">
+            <button class="btn" id="btn-back"><i class="fa-solid fa-arrow-left"></i> Về trang chính</button>
+            <button class="btn" id="btn-refresh"><i class="fa-solid fa-rotate"></i> Tải lại</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <section class="panel">
+            <h2><i class="fa-solid fa-database"></i> MongoDB</h2>
+
+            <div class="row">
+                <label>Collection</label>
+                <select id="collectionSelect"></select>
+                <button class="btn" id="btn-load"><i class="fa-solid fa-download"></i> Load</button>
+            </div>
+
+            <div class="row">
+                <label>Limit</label>
+                <input id="limitInput" type="number" min="1" max="200" value="50" />
+                <label>Skip</label>
+                <input id="skipInput" type="number" min="0" value="0" />
+                <button class="btn" id="btn-prev"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="btn" id="btn-next"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <div class="hint">
+                Tip: mở nhanh <span class="chip" data-collection="NetworkAgg">NetworkAgg</span> / <span class="chip"
+                    data-collection="AccessLog">AccessLog</span>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 190px;">_id</th>
+                            <th>Nội dung (preview)</th>
+                            <th style="width: 120px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows"></tbody>
+                </table>
+            </div>
+
+            <div class="json-view">
+                <div class="json-head">
+                    <span><i class="fa-solid fa-code"></i> Chi tiết</span>
+                    <button class="btn btn-sm" id="btn-close-detail"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <pre id="jsonDetail">Chọn một dòng để xem chi tiết...</pre>
+            </div>
+        </section>
+
+        <section class="panel chat">
+            <h2><i class="fa-solid fa-comment-dots"></i> Gemini (Admin)</h2>
+
+            <div id="chatLog" class="chat-log"></div>
+
+            <div class="chat-input">
+                <textarea id="chatText" rows="2"
+                    placeholder="Nhập câu hỏi... (vd: Tóm tắt truy cập đáng ngờ hôm nay)"></textarea>
+                <button class="btn" id="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+
+            <div class="small">
+                API: gọi qua backend <code>/admin/chatgpt</code> (cần <code>GEMINI_API_KEY</code>).
+            </div>
+        </section>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="access.js"></script>
+</body>
+
+</html>
