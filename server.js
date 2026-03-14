@@ -23,10 +23,6 @@ const FACE_UNLOCK_THRESHOLD = Number(process.env.FACE_UNLOCK_THRESHOLD || 0.44);
 const SESSION_COOKIE_NAME = "admin_sid";
 const SESSION_TTL_MS = Number(process.env.SESSION_TTL_MS || 1000 * 60 * 60 * 12);
 const FACE_RESET_TTL_MS = Number(process.env.FACE_RESET_TTL_MS || 1000 * 60 * 2);
-const UPLOAD_BURST_WINDOW_MS = Number(process.env.UPLOAD_BURST_WINDOW_MS || 60 * 1000);
-const UPLOAD_BURST_LIMIT = Number(process.env.UPLOAD_BURST_LIMIT || 12);
-const UPLOAD_CONCURRENT_LIMIT = Number(process.env.UPLOAD_CONCURRENT_LIMIT || 4);
-const UPLOAD_BLOCK_DURATION_MS = Number(process.env.UPLOAD_BLOCK_DURATION_MS || 1000 * 60 * 60 * 24 * 365 * 5);
 
 app.disable("x-powered-by");
 app.set("trust proxy", true);
@@ -58,19 +54,12 @@ app.use((req, res, next) => {
   );
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  res.setHeader("Origin-Agent-Cluster", "?1");
-  if (req.secure || String(req.headers["x-forwarded-proto"] || "") === "https") {
-    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-  }
   res.setHeader("Content-Security-Policy", buildCsp());
   next();
 });
 
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: false, limit: "20mb" }));
-
-app.use(rejectBlockedIp);
 
 app.use(
   express.static(PUBLIC_DIR, {
@@ -235,41 +224,6 @@ const UploadCounterSchema = new mongoose.Schema(
 const UploadCounter =
   mongoose.models.UploadCounter ||
   mongoose.model("UploadCounter", UploadCounterSchema);
-
-const BlockedIpSchema = new mongoose.Schema(
-  {
-    ip: { type: String, required: true, unique: true, index: true },
-    networkKey: { type: String, index: true },
-    status: { type: String, default: "blocked", index: true },
-    reason: { type: String, default: "UPLOAD_ABUSE" },
-    blockedAt: { type: Date, default: Date.now, index: true },
-    blockedUntil: { type: Date, index: true },
-    unblockAt: { type: Date },
-    requestCount: { type: Number, default: 0 },
-    concurrentAtDetection: { type: Number, default: 0 },
-    route: String,
-    method: String,
-    userAgent: String,
-    referer: String,
-    acceptLanguage: String,
-    forwardedFor: String,
-    device: {
-      timezone: String,
-      platform: String,
-      language: String,
-      screen: { w: Number, h: Number },
-      deviceMemory: Number,
-      hardwareConcurrency: Number,
-      touch: Boolean,
-      deviceName: String,
-    },
-    lastEvent: { type: Object, default: {} },
-    notes: { type: String, default: "" },
-  },
-  { versionKey: false }
-);
-const BlockedIp =
-  mongoose.models.BlockedIp || mongoose.model("BlockedIp", BlockedIpSchema);
 
 const FaceIdSchema = new mongoose.Schema(
   {
@@ -684,187 +638,6 @@ function buildRateKey(prefix, req) {
   return `${prefix}:${getClientIp(req)}`;
 }
 
-const ipBlockCache = new Map();
-const uploadConcurrency = new Map();
-
-function getCachedBlockedIp(ip) {
-  const item = ipBlockCache.get(ip);
-  if (!item) return null;
-  if (item.blockedUntil && item.blockedUntil <= Date.now()) {
-    ipBlockCache.delete(ip);
-    return null;
-  }
-  return item;
-}
-
-function setBlockedIpCache(ip, payload) {
-  if (!ip) return;
-  ipBlockCache.set(ip, {
-    blockedUntil: payload?.blockedUntil ? new Date(payload.blockedUntil).getTime() : null,
-    reason: String(payload?.reason || "UPLOAD_ABUSE"),
-  });
-}
-
-function beginTrackedUpload(ip) {
-  const current = uploadConcurrency.get(ip) || 0;
-  const next = current + 1;
-  uploadConcurrency.set(ip, next);
-  return next;
-}
-
-function endTrackedUpload(ip) {
-  if (!ip) return 0;
-  const current = uploadConcurrency.get(ip) || 0;
-  const next = Math.max(0, current - 1);
-  if (next <= 0) uploadConcurrency.delete(ip);
-  else uploadConcurrency.set(ip, next);
-  return next;
-}
-
-async function findBlockedIp(ip) {
-  if (!ip) return null;
-  const cached = getCachedBlockedIp(ip);
-  if (cached) return cached;
-  if (!isMongoReady()) return null;
-
-  const now = new Date();
-  const doc = await BlockedIp.findOne({
-    ip,
-    status: "blocked",
-    $or: [{ blockedUntil: null }, { blockedUntil: { $gt: now } }],
-  })
-    .sort({ blockedAt: -1 })
-    .lean();
-
-  if (doc) setBlockedIpCache(ip, doc);
-  return doc;
-}
-
-async function blockIpAndPersist(req, details = {}) {
-  const ip = getClientIp(req);
-  if (!ip) return null;
-
-  const blockedUntil = new Date(Date.now() + UPLOAD_BLOCK_DURATION_MS);
-  const networkKey = getNetworkKeyFromIp(ip);
-  const xffRaw = getForwardedForRaw(req);
-  let device = null;
-  let lastEvent = {};
-
-  if (isMongoReady()) {
-    const networkDoc = await NetworkAgg.findOne({ networkKey }).lean().catch(() => null);
-    if (networkDoc?.client) device = networkDoc.client;
-    if (networkDoc?.lastEvent) lastEvent = networkDoc.lastEvent;
-  }
-
-  const payload = {
-    ip,
-    networkKey,
-    status: "blocked",
-    reason: String(details.reason || "UPLOAD_ABUSE"),
-    blockedAt: new Date(),
-    blockedUntil,
-    requestCount: Number(details.requestCount || 0),
-    concurrentAtDetection: Number(details.concurrent || 0),
-    route: String(req.path || req.originalUrl || req.url || ""),
-    method: String(req.method || ""),
-    userAgent: String(req.headers["user-agent"] || ""),
-    referer: String(req.headers.referer || ""),
-    acceptLanguage: String(req.headers["accept-language"] || ""),
-    forwardedFor: xffRaw,
-    device: device || undefined,
-    lastEvent,
-    notes: String(details.notes || "Too many upload requests from one IP"),
-  };
-
-  setBlockedIpCache(ip, payload);
-
-  if (isMongoReady()) {
-    await BlockedIp.updateOne(
-      { ip },
-      {
-        $set: payload,
-        $setOnInsert: { unblockAt: null },
-      },
-      { upsert: true }
-    );
-  }
-
-  return payload;
-}
-
-function getUploadBurstCount(req) {
-  const key = buildRateKey("upload-burst", req);
-  const now = Date.now();
-  const arr = rateBuckets.get(key) || [];
-  const fresh = arr.filter((ts) => now - ts < UPLOAD_BURST_WINDOW_MS);
-  fresh.push(now);
-  rateBuckets.set(key, fresh);
-  return fresh.length;
-}
-
-async function enforceUploadSecurity(req, res, next) {
-  try {
-    const ip = getClientIp(req);
-    const blocked = await findBlockedIp(ip);
-    if (blocked) {
-      return res.status(403).json({
-        success: false,
-        message: "IP này đã bị khóa do nghi ngờ tấn công upload.",
-      });
-    }
-
-    const requestCount = getUploadBurstCount(req);
-    const concurrent = beginTrackedUpload(ip);
-    req.__trackedUploadIp = ip;
-
-    if (requestCount > UPLOAD_BURST_LIMIT || concurrent > UPLOAD_CONCURRENT_LIMIT) {
-      await blockIpAndPersist(req, {
-        reason: requestCount > UPLOAD_BURST_LIMIT ? "UPLOAD_BURST_LIMIT" : "UPLOAD_CONCURRENT_LIMIT",
-        requestCount,
-        concurrent,
-        notes: `Blocked after upload burst=${requestCount}, concurrent=${concurrent}`,
-      });
-      endTrackedUpload(ip);
-      req.__trackedUploadIp = null;
-      return res.status(429).json({
-        success: false,
-        message: "Phát hiện upload bất thường. IP đã bị khóa.",
-      });
-    }
-
-    const release = () => {
-      if (req.__trackedUploadIp) {
-        endTrackedUpload(req.__trackedUploadIp);
-        req.__trackedUploadIp = null;
-      }
-    };
-    res.on("finish", release);
-    res.on("close", release);
-    next();
-  } catch (e) {
-    if (req.__trackedUploadIp) {
-      endTrackedUpload(req.__trackedUploadIp);
-      req.__trackedUploadIp = null;
-    }
-    res.status(500).json({ success: false, message: "Upload security error: " + e.message });
-  }
-}
-
-async function rejectBlockedIp(req, res, next) {
-  try {
-    const blocked = await findBlockedIp(getClientIp(req));
-    if (blocked) {
-      return res.status(403).json({
-        success: false,
-        message: "IP này đã bị khóa do hoạt động bất thường.",
-      });
-    }
-    next();
-  } catch (e) {
-    next(e);
-  }
-}
-
 function isMongoReady() {
   return mongoose.connection?.readyState === 1;
 }
@@ -1226,7 +999,7 @@ app.get("/stats", async (req, res) => {
   }
 });
 
-app.post("/upload", requireSameOrigin, enforceUploadSecurity, (req, res, next) => {
+app.post("/upload", requireSameOrigin, (req, res, next) => {
   upload.single("myFile")(req, res, (err) => {
     if (err) {
       return res.status(400).json({ success: false, message: err.message });
@@ -1284,7 +1057,7 @@ app.post("/upload", requireSameOrigin, enforceUploadSecurity, (req, res, next) =
   }
 });
 
-app.post("/upload-url", requireSameOrigin, enforceUploadSecurity, async (req, res) => {
+app.post("/upload-url", requireSameOrigin, async (req, res) => {
   const { url, accountIndex } = req.body || {};
   if (!url) return res.status(400).json({ success: false, message: "Thiếu URL" });
 
